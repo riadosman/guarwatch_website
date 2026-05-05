@@ -25,14 +25,14 @@ export function EventLightbox({ event, onClose }: Props) {
     <Dialog open={open} onOpenChange={(next) => (!next ? onClose() : undefined)}>
       <DialogContent className="w-[min(96vw,72rem)] max-w-none border-white/10 bg-zinc-950 p-0 text-zinc-100 sm:rounded-xl">
         {event && (
-          <div className="grid max-h-[92vh] grid-rows-[auto_1fr] lg:max-h-[88vh] lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-1">
-            <div className="relative flex items-center justify-center bg-black">
+          <div className="grid max-h-[92vh] grid-rows-[1fr_auto] lg:max-h-[88vh] lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-1">
+            <div className="relative flex min-h-0 items-center justify-center bg-black">
               {screenshot ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={screenshot}
                   alt={VIOLATION_LABEL[event.type]}
-                  className="max-h-[55vh] w-full object-contain lg:max-h-[88vh]"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <div className="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
