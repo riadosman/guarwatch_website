@@ -23,25 +23,25 @@ export function EventLightbox({ event, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => (!next ? onClose() : undefined)}>
-      <DialogContent className="max-w-4xl border-white/10 bg-zinc-950 p-0 text-zinc-100">
+      <DialogContent className="w-[min(96vw,72rem)] max-w-none border-white/10 bg-zinc-950 p-0 text-zinc-100 sm:rounded-xl">
         {event && (
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <div className="relative bg-black">
+          <div className="grid max-h-[92vh] grid-rows-[auto_1fr] lg:max-h-[88vh] lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-1">
+            <div className="relative flex items-center justify-center bg-black">
               {screenshot ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={screenshot}
                   alt={VIOLATION_LABEL[event.type]}
-                  className="max-h-[70vh] w-full object-contain"
+                  className="max-h-[55vh] w-full object-contain lg:max-h-[88vh]"
                 />
               ) : (
-                <div className="flex aspect-video items-center justify-center text-sm text-zinc-500">
+                <div className="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
                   görüntü yok
                 </div>
               )}
               <div className="absolute left-4 top-4">
                 <span
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur ${
                     VIOLATION_TONE[event.type].chip
                   }`}
                 >
@@ -51,7 +51,7 @@ export function EventLightbox({ event, onClose }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-5 border-t border-white/5 p-6 lg:border-l lg:border-t-0">
+            <div className="flex min-h-0 flex-col gap-5 overflow-y-auto border-t border-white/5 p-6 lg:border-l lg:border-t-0">
               <div>
                 <DialogTitle className="text-lg font-semibold tracking-tight text-white">
                   İhlal Detayı

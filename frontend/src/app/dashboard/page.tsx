@@ -28,7 +28,7 @@ export default function DashboardPage() {
         <img
           src={url}
           alt=""
-          className="h-10 w-10 rounded object-cover ring-1 ring-white/10"
+          className="h-10 w-14 rounded object-cover ring-1 ring-white/10"
         />
       ) : null,
       action: { label: "İncele", onClick: () => setSelected(latest) },
