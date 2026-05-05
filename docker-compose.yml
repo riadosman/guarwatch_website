@@ -42,5 +42,17 @@ services:
     depends_on:
       - backend
 
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile.dev
+    ports:
+      - "9000:9000"
+    environment:
+      AGENT_DEVICE_TOKEN: dev-token
+      AGENT_PORT: 9000
+    volumes:
+      - ./agent:/app
+
 volumes:
   postgres_data:
