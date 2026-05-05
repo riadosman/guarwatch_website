@@ -1,12 +1,15 @@
 "use client";
 
+import { Calendar, Server } from "lucide-react";
+
+import { MetadataDisplay } from "@/components/MetadataDisplay";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { absoluteUrl } from "@/lib/api";
+import { VIOLATION_LABEL, VIOLATION_TONE, formatAbsolute, formatRelative } from "@/lib/format";
 import type { ViolationEvent } from "@/lib/types";
 
 interface Props {
@@ -20,24 +23,93 @@ export function EventLightbox({ event, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => (!next ? onClose() : undefined)}>
-      <DialogContent className="max-w-3xl">
-        <DialogTitle>{event?.type ?? ""}</DialogTitle>
-        <DialogDescription>
-          {event ? `Track ${event.track_id ?? "?"} · ${event.occurred_at}` : ""}
-        </DialogDescription>
-        {screenshot && (
-          <img
-            src={screenshot}
-            alt={event?.type ?? ""}
-            className="max-h-[70vh] w-full rounded object-contain"
-          />
-        )}
-        {event?.metadata && Object.keys(event.metadata).length > 0 && (
-          <pre className="rounded bg-muted p-3 text-xs">
-            {JSON.stringify(event.metadata, null, 2)}
-          </pre>
+      <DialogContent className="max-w-4xl border-white/10 bg-zinc-950 p-0 text-zinc-100">
+        {event && (
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <div className="relative bg-black">
+              {screenshot ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={screenshot}
+                  alt={VIOLATION_LABEL[event.type]}
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              ) : (
+                <div className="flex aspect-video items-center justify-center text-sm text-zinc-500">
+                  görüntü yok
+                </div>
+              )}
+              <div className="absolute left-4 top-4">
+                <span
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    VIOLATION_TONE[event.type].chip
+                  }`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${VIOLATION_TONE[event.type].dot}`} />
+                  {VIOLATION_LABEL[event.type]}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-5 border-t border-white/5 p-6 lg:border-l lg:border-t-0">
+              <div>
+                <DialogTitle className="text-lg font-semibold tracking-tight text-white">
+                  İhlal Detayı
+                </DialogTitle>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Backend event #{event.id}
+                </p>
+              </div>
+
+              <dl className="space-y-3 text-sm">
+                <Row icon={Calendar} label="Olay zamanı">
+                  <span className="text-white">{formatAbsolute(event.occurred_at)}</span>
+                  <span className="ml-2 text-zinc-500">
+                    ({formatRelative(event.occurred_at)})
+                  </span>
+                </Row>
+                <Row icon={Calendar} label="Backend kayıt">
+                  <span className="text-zinc-300">{formatAbsolute(event.received_at)}</span>
+                </Row>
+                <Row icon={Server} label="Cihaz">
+                  <span className="font-mono text-xs text-zinc-300">{event.device_id}</span>
+                </Row>
+              </dl>
+
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-wider text-zinc-500">
+                  Sinyal verileri
+                </p>
+                <MetadataDisplay
+                  metadata={event.metadata}
+                  trackId={event.track_id}
+                  agentEventId={event.agent_event_id}
+                />
+              </div>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Row({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-zinc-500">
+        <Icon className="h-3 w-3" />
+        {label}
+      </dt>
+      <dd className="text-sm">{children}</dd>
+    </div>
   );
 }

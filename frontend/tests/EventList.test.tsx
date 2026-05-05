@@ -32,15 +32,15 @@ const items: ViolationEvent[] = [
 describe("EventList", () => {
   it("renders one card per event with type and track", () => {
     render(<EventList events={items} onSelect={vi.fn()} />);
-    expect(screen.getByText("UYUYOR")).toBeInTheDocument();
-    expect(screen.getByText("GOZ_KAPALI")).toBeInTheDocument();
-    expect(screen.getAllByText(/Track 7/i)).toHaveLength(2);
+    expect(screen.getByText(/Uyuyor/)).toBeInTheDocument();
+    expect(screen.getByText(/Göz Kapalı/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Takip #7/i)).toHaveLength(2);
   });
 
   it("calls onSelect with event when card clicked", () => {
     const onSelect = vi.fn();
     render(<EventList events={items} onSelect={onSelect} />);
-    fireEvent.click(screen.getByText("UYUYOR").closest("button")!);
+    fireEvent.click(screen.getByText(/Uyuyor/).closest("button")!);
     expect(onSelect).toHaveBeenCalledWith(items[0]);
   });
 
