@@ -104,3 +104,17 @@ def test_get_events_returns_recent_first(client: TestClient, device: Device):
     assert len(items) == 3
     ids = [e["agent_event_id"] for e in items]
     assert ids == sorted(ids, reverse=True)
+
+
+def test_post_event_broadcasts_to_ws_panel(client: TestClient, device: Device):
+    headers = {"Authorization": "Bearer tok-abc"}
+    with client.websocket_connect("/ws/panel") as ws:
+        client.post(
+            f"/api/devices/{device.id}/events",
+            headers=headers,
+            **_multipart(_payload(99), b"\xff\xd8\xff\xe0img"),
+        )
+        msg = ws.receive_json()
+        assert msg["type"] == "event_created"
+        assert msg["payload"]["agent_event_id"] == 99
+        assert msg["payload"]["type"] == "UYUYOR"
