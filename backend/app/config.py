@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,6 +13,24 @@ class Settings(BaseSettings):
     access_token_ttl_min: int = 15
     refresh_token_ttl_days: int = 7
     cors_origins: str = "http://localhost:3000"
+
+    # Demo violation flow
+    uploads_dir: Path = Field(default=Path("./uploads"))
+    device_tokens: str = Field(
+        default="",
+        description="Comma-separated device_id:token pairs, e.g. 'uuid1:tok1,uuid2:tok2'",
+    )
+    max_screenshot_bytes: int = 2 * 1024 * 1024  # 2 MB
+
+    def device_token_map(self) -> dict[str, str]:
+        out: dict[str, str] = {}
+        for pair in self.device_tokens.split(","):
+            pair = pair.strip()
+            if not pair or ":" not in pair:
+                continue
+            device_id, token = pair.split(":", 1)
+            out[device_id.strip()] = token.strip()
+        return out
 
 
 settings = Settings()
