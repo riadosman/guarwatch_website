@@ -28,14 +28,9 @@ services:
     volumes:
       - ./backend:/app
       - backend_uploads:/uploads
-    command: >
+    command: >-
       sh -c "alembic upgrade head &&
-             python -c 'from app.db import SessionLocal; from app.models import Device; import uuid;
-             s=SessionLocal();
-             did=uuid.UUID(\"00000000-0000-0000-0000-000000000001\");
-             d=s.get(Device, did);
-             d or s.add(Device(id=did, name=\"Demo Jetson 1\", device_token=\"dev-token\"));
-             s.commit(); s.close()' &&
+             python -c 'from app.db import SessionLocal; from app.models import Device; import uuid; s=SessionLocal(); did=uuid.UUID(\"00000000-0000-0000-0000-000000000001\"); d=s.get(Device, did); d or s.add(Device(id=did, name=\"Demo Jetson 1\", device_token=\"dev-token\")); s.commit(); s.close()' &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       postgres:
