@@ -28,16 +28,21 @@ export function useEventStream() {
   }, []);
 
   useEffect(() => {
-    const handle = openPanelWs(
-      (msg) => {
+    const handle = openPanelWs({
+      onMessage: (msg) => {
         setEvents((prev) => {
           if (prev.some((e) => e.id === msg.payload.id)) return prev;
           return [msg.payload, ...prev];
         });
         setLatest(msg.payload);
       },
-      setStatus,
-    );
+      onStatusChange: setStatus,
+      onReconnect: () => {
+        getEvents()
+          .then(setEvents)
+          .catch(() => {});
+      },
+    });
     return () => handle.close();
   }, []);
 

@@ -6,13 +6,18 @@ export interface PanelHandle {
   close(): void;
 }
 
-export function openPanelWs(
-  onMessage: (msg: PanelMessage) => void,
-  onStatusChange?: (status: "open" | "closed") => void,
-): PanelHandle {
+export interface OpenPanelOptions {
+  onMessage: (msg: PanelMessage) => void;
+  onStatusChange?: (status: "open" | "closed") => void;
+  onReconnect?: () => void;
+}
+
+export function openPanelWs(opts: OpenPanelOptions): PanelHandle {
+  const { onMessage, onStatusChange, onReconnect } = opts;
   let closed = false;
   let ws: WebSocket | null = null;
   let backoffMs = 1000;
+  let hasOpenedOnce = false;
 
   const connect = () => {
     if (closed) return;
@@ -20,6 +25,11 @@ export function openPanelWs(
     ws.onopen = () => {
       backoffMs = 1000;
       onStatusChange?.("open");
+      if (hasOpenedOnce) {
+        onReconnect?.();
+      } else {
+        hasOpenedOnce = true;
+      }
     };
     ws.onmessage = (event) => {
       try {

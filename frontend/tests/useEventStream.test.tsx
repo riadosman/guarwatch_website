@@ -27,8 +27,10 @@ vi.mock("@/lib/api", () => ({
 }));
 
 vi.mock("@/lib/ws", () => ({
-  openPanelWs: (cb: (m: { type: "event_created"; payload: ViolationEvent }) => void) => {
-    wsHandlers.onMessage = cb;
+  openPanelWs: (opts: {
+    onMessage: (m: { type: "event_created"; payload: ViolationEvent }) => void;
+  }) => {
+    wsHandlers.onMessage = opts.onMessage;
     return { close: wsHandlers.close };
   },
 }));
