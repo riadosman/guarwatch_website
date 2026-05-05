@@ -23,8 +23,20 @@ services:
       DATABASE_URL: postgresql+psycopg://fleet:fleet@postgres:5432/fleet
       JWT_SECRET: dev-secret-change-me
       CORS_ORIGINS: http://localhost:3000
+      UPLOADS_DIR: /uploads
+      DEVICE_TOKENS: 00000000-0000-0000-0000-000000000001:dev-token
     volumes:
       - ./backend:/app
+      - backend_uploads:/uploads
+    command: >
+      sh -c "alembic upgrade head &&
+             python -c 'from app.db import SessionLocal; from app.models import Device; import uuid;
+             s=SessionLocal();
+             did=uuid.UUID(\"00000000-0000-0000-0000-000000000001\");
+             d=s.get(Device, did);
+             d or s.add(Device(id=did, name=\"Demo Jetson 1\", device_token=\"dev-token\"));
+             s.commit(); s.close()' &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,6 +47,7 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_WS_URL: ws://localhost:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -46,13 +59,16 @@ services:
     build:
       context: ./agent
       dockerfile: Dockerfile.dev
-    ports:
-      - "9000:9000"
     environment:
+      AGENT_DEVICE_ID: 00000000-0000-0000-0000-000000000001
       AGENT_DEVICE_TOKEN: dev-token
+      AGENT_BACKEND_URL: http://backend:8000
       AGENT_PORT: 9000
     volumes:
       - ./agent:/app
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
+  backend_uploads:
