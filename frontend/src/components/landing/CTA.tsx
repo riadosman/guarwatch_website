@@ -9,11 +9,12 @@ export function CTA() {
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-10 text-center sm:p-16">
           <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            Bir kaza beklemeyin. Şimdi izleyin.
+            Bir güvenlik açığı beklemeyin. Şimdi izleyin.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-            Demo paneli açın, simülatörle test ihlalleri tetikleyin ya da
-            kendi Jetson'ınızı bağlayın — agent paketi için README hazır.
+            Tesisinizdeki güvenlik kulübeleri için demo paneli açın, simülatörle
+            test ihlalleri tetikleyin ya da kendi Jetson'ınızı bağlayın — agent
+            paketi için README hazır.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="bg-red-500 hover:bg-red-600">

@@ -19,7 +19,7 @@ export function Navbar({ variant = "marketing" }: Props) {
           </span>
           <span className="text-sm font-semibold tracking-tight">
             Guardwatch
-            <span className="ml-1 text-zinc-500 font-normal">/ Fleet</span>
+            <span className="ml-1 text-zinc-500 font-normal">/ Güvenlik</span>
           </span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-3">

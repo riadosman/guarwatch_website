@@ -18,7 +18,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "GuardWatch",
-  description: "Fleet management and monitoring",
+  description: "Güvenlik kulübelerinde nöbet tutan personel için canlı uyku/dalgınlık izleme paneli",
 };
 
 export default function RootLayout({

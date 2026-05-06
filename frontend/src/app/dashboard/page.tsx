@@ -62,8 +62,8 @@ export default function DashboardPage() {
               Canlı İhlal Akışı
             </h1>
             <p className="mt-1 text-sm text-zinc-400">
-              Filodaki Jetson cihazlarından gelen tüm tespitler — yeni event
-              geldiğinde otomatik güncellenir.
+              Güvenlik kulübelerindeki Jetson cihazlarından gelen tüm nöbet
+              ihlalleri — yeni event geldiğinde otomatik güncellenir.
             </p>
           </div>
           <div className="flex items-center gap-2 self-start text-xs text-zinc-500 sm:self-auto">

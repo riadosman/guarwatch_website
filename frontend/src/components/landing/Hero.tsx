@@ -12,18 +12,25 @@ export function Hero() {
         <div className="flex flex-col items-center text-center">
           <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-300">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Saha pilotunda · gerçek müşteriyle
+            Güvenlik kulübeleri için · sürücüler için değil
           </span>
           <h1 className="max-w-4xl text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Sürücü uykuya dalmadan{" "}
+            Güvenlik nöbette uyuduğunda{" "}
             <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-              filonuz haberdar olur.
+              merkez anında haberdar olur.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-balance text-lg text-zinc-400">
             Guardwatch, NVIDIA Jetson üzerinde uçta çalışan görüntü işleme ile
-            her sürücüyü saniye saniye izler. Göz kapanması, hareketsizlik ve
-            uyku tespit edildiğinde anında merkezi panele kanıtlı bildirim düşer.
+            <strong className="text-zinc-200"> güvenlik kulübelerinde nöbet
+            tutan personeli</strong> saniye saniye izler. Göz kapanması,
+            hareketsizlik veya uyku tespit edildiğinde merkezi panele kanıtlı
+            bildirim düşer.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm text-zinc-500">
+            Bu sistem araç içi sürücü izleme için değildir. Tesis girişi,
+            otopark, fabrika ve site güvenlik kulübelerinde görev yapan
+            güvenlik ekiplerinin nöbet kalitesini ölçer.
           </p>
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="bg-red-500 hover:bg-red-600">

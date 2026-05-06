@@ -27,9 +27,9 @@ const FEATURES = [
   },
   {
     icon: ServerCog,
-    title: "Çok cihazlı filo",
+    title: "Çok kulübeli izleme",
     body:
-      "Tek panelden onlarca Jetson izlenir. Her cihaz kendi güvenli token'ı ile bağlanır, idempotent kuyrukla offline'a dayanır.",
+      "Tek panelden onlarca güvenlik kulübesindeki Jetson izlenir. Her kulübe kendi güvenli token'ı ile bağlanır, idempotent kuyrukla offline'a dayanır.",
   },
   {
     icon: BellRing,
@@ -45,11 +45,11 @@ export function Features() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            Tek başına çözen bir cihaz, beraber çalışan bir filo.
+            Her kulübede yapay zeka, merkezde tek panel.
           </h2>
           <p className="mt-4 text-zinc-400">
-            Her Jetson kendi başına yapay zeka tespiti yapar; merkezi panel
-            sadece olayları toplar ve operatöre sunar.
+            Her güvenlik kulübesindeki Jetson, nöbetçi personeli kendi başına
+            izler; merkezi panel sadece ihlalleri toplar ve operatöre sunar.
           </p>
         </div>
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

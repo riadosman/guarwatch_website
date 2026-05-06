@@ -21,6 +21,9 @@ class Settings(BaseSettings):
         description="Comma-separated device_id:token pairs, e.g. 'uuid1:tok1,uuid2:tok2'",
     )
     max_screenshot_bytes: int = 2 * 1024 * 1024  # 2 MB
+    min_screenshot_width: int = 1280
+    min_screenshot_height: int = 720
+    screenshot_strict: bool = False  # True → reject low-res, False → log warning only
 
     def device_token_map(self) -> dict[str, str]:
         out: dict[str, str] = {}

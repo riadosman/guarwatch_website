@@ -4,23 +4,23 @@ const STEPS = [
   {
     n: "01",
     icon: Camera,
-    title: "Jetson görür",
+    title: "Kulübedeki Jetson görür",
     body:
-      "Hikvision IP kamera akışı DeepStream pipeline'ına girer. YOLO ile kişi tespit, NvDCF ile takip ID'si verilir. PERCLOS + EAR + pitch hesaplanır.",
+      "Güvenlik kulübesine yerleştirilen IP kamera akışı DeepStream pipeline'ına girer. YOLO ile nöbetçi personel tespit edilir, NvDCF ile takip ID'si verilir. PERCLOS + EAR + pitch hesaplanır.",
   },
   {
     n: "02",
     icon: Cloud,
-    title: "İhlal sunucuya gönderilir",
+    title: "İhlal merkeze gönderilir",
     body:
-      "GOZ_KAPALI / HAREKETSIZ / UYUYOR durumuna geçildiği an, başlangıç anının 1080p fotosu Bearer-token'lı multipart isteğiyle backend'e gönderilir.",
+      "Güvenlik personelinin gözleri kapalı, hareketsiz veya uykulu durumuna geçtiği an, başlangıç anının 1080p fotosu Bearer-token'lı multipart isteğiyle backend'e gönderilir.",
   },
   {
     n: "03",
     icon: Monitor,
-    title: "Operatör görür",
+    title: "Güvenlik amiri görür",
     body:
-      "Backend yeni event'i veritabanına yazar, fotoyu diske kaydeder, açık tarayıcılara WebSocket üzerinden push eder. Toast + kart + tıklanabilir kanıt.",
+      "Backend yeni event'i veritabanına yazar, fotoyu diske kaydeder, merkez ofiste açık tarayıcılara WebSocket üzerinden push eder. Toast + kart + tıklanabilir kanıt.",
   },
 ];
 
