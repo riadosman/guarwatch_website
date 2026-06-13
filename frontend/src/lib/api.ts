@@ -22,7 +22,9 @@ export async function getEvents(limit = 50): Promise<ViolationEvent[]> {
   });
   handle401(res);
   if (!res.ok) throw new Error(`getEvents failed: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  // backend now returns paginated shape; extract items for backward compat
+  return Array.isArray(data) ? data : (data.items ?? []);
 }
 
 export async function deleteEvent(id: number): Promise<void> {
