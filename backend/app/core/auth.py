@@ -29,8 +29,9 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
 
 
 def clear_auth_cookies(response: Response) -> None:
-    response.delete_cookie(_ACCESS_COOKIE)
-    response.delete_cookie(_REFRESH_COOKIE)
+    opts = dict(httponly=True, samesite="lax", secure=settings.cookie_secure)
+    response.delete_cookie(_ACCESS_COOKIE, **opts)
+    response.delete_cookie(_REFRESH_COOKIE, **opts)
 
 
 def _verify_jwt(token: str | None) -> str | None:
@@ -53,7 +54,6 @@ async def require_auth(
 
 
 def verify_admin_credentials(username: str, password: str) -> bool:
-    return (
-        hmac.compare_digest(username, settings.admin_username)
-        and hmac.compare_digest(password, settings.admin_password)
-    )
+    username_ok = hmac.compare_digest(username.encode(), settings.admin_username.encode())
+    password_ok = hmac.compare_digest(password.encode(), settings.admin_password.encode())
+    return username_ok and password_ok
