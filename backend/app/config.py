@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     access_token_ttl_min: int = 15
     refresh_token_ttl_days: int = 7
     cors_origins: str = "http://localhost:3000"
+    admin_username: str = Field(default="admin")
+    admin_password: str = Field(default="changeme")
+    cookie_secure: bool = Field(default=False)
 
     # Demo violation flow
     uploads_dir: Path = Field(default=Path("./uploads"))
