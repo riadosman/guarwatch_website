@@ -100,7 +100,7 @@ def test_get_events_returns_recent_first(client: TestClient, device: Device):
         )
     res = client.get("/api/events?limit=10")
     assert res.status_code == 200
-    items = res.json()
+    items = res.json()["items"]
     assert len(items) == 3
     ids = [e["agent_event_id"] for e in items]
     assert ids == sorted(ids, reverse=True)
@@ -118,3 +118,19 @@ def test_post_event_broadcasts_to_ws_panel(client: TestClient, device: Device):
         assert msg["type"] == "event_created"
         assert msg["payload"]["agent_event_id"] == 99
         assert msg["payload"]["type"] == "UYUYOR"
+
+
+def test_list_events_paginated(client: TestClient):
+    res = client.get("/api/events?page=1&page_size=10")
+    assert res.status_code == 200
+    data = res.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+
+
+def test_export_csv(client: TestClient):
+    res = client.get("/api/events/export")
+    assert res.status_code == 200
+    assert "text/csv" in res.headers["content-type"]
+    assert "id" in res.text  # CSV header row

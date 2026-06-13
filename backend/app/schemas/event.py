@@ -32,3 +32,10 @@ class EventOut(BaseModel):
 class EventBroadcast(BaseModel):
     type: Literal["event_created"] = "event_created"
     payload: EventOut
+
+
+class PaginatedEventsOut(BaseModel):
+    items: list[EventOut]
+    total: int
+    page: int
+    pages: int

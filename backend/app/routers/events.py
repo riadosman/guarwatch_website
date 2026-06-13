@@ -1,23 +1,27 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
+import math
 import random
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func as sqlfunc, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.core.auth import require_auth
 from app.core.deps import DbSession, require_device_auth
 from app.models import Device, Event
-from app.schemas.event import EventIn, EventOut
+from app.schemas.event import EventIn, EventOut, PaginatedEventsOut
 from app.services.event_store import EventAlreadyExists, create_event
 from app.services.image_validator import validate_screenshot
 from app.services.panel_hub import hub
@@ -125,12 +129,104 @@ async def post_event(
 
 
 @router.get("/events")
-def list_events(db: DbSession, _: Annotated[str, Depends(require_auth)], limit: int = 50) -> list[EventOut]:
-    limit = max(1, min(limit, 200))
-    rows = (
-        db.execute(select(Event).order_by(Event.occurred_at.desc()).limit(limit)).scalars().all()
+def list_events(
+    db: DbSession,
+    _: Annotated[str, Depends(require_auth)],
+    limit: int = 50,
+    page: int = 1,
+    page_size: int = 50,
+    device_id: str | None = None,
+    type: str | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+) -> PaginatedEventsOut:
+    page_size = max(1, min(page_size, 200))
+    page = max(1, page)
+
+    q = select(Event).order_by(Event.occurred_at.desc())
+    if device_id:
+        try:
+            q = q.where(Event.device_id == uuid.UUID(device_id))
+        except ValueError:
+            pass
+    if type:
+        q = q.where(Event.type == type)
+    if from_date:
+        q = q.where(Event.occurred_at >= from_date)
+    if to_date:
+        q = q.where(
+            Event.occurred_at
+            < datetime(to_date.year, to_date.month, to_date.day, tzinfo=timezone.utc)
+            + timedelta(days=1)
+        )
+
+    total = db.execute(select(sqlfunc.count()).select_from(q.subquery())).scalar_one()
+    rows = db.execute(q.offset((page - 1) * page_size).limit(page_size)).scalars().all()
+    return PaginatedEventsOut(
+        items=[_to_out(r) for r in rows],
+        total=total,
+        page=page,
+        pages=max(1, math.ceil(total / page_size)),
     )
-    return [_to_out(r) for r in rows]
+
+
+@router.get("/events/export")
+def export_events_csv(
+    db: DbSession,
+    _: Annotated[str, Depends(require_auth)],
+    device_id: str | None = None,
+    type: str | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+) -> StreamingResponse:
+    from app.models.device import Device as _Device
+
+    q = (
+        select(Event, _Device.name.label("device_name"))
+        .join(_Device, Event.device_id == _Device.id)
+        .order_by(Event.occurred_at.desc())
+    )
+    if device_id:
+        try:
+            q = q.where(Event.device_id == uuid.UUID(device_id))
+        except ValueError:
+            pass
+    if type:
+        q = q.where(Event.type == type)
+    if from_date:
+        q = q.where(Event.occurred_at >= from_date)
+    if to_date:
+        q = q.where(
+            Event.occurred_at
+            < datetime(to_date.year, to_date.month, to_date.day, tzinfo=timezone.utc)
+            + timedelta(days=1)
+        )
+
+    rows = db.execute(q).all()
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["id", "device_name", "type", "track_id", "occurred_at", "received_at", "perclos", "pitch", "signal_src"])
+    for row in rows:
+        event, device_name = row.Event, row.device_name
+        meta = event.metadata_json or {}
+        writer.writerow([
+            event.id,
+            device_name,
+            event.type,
+            event.track_id,
+            event.occurred_at,
+            event.received_at,
+            meta.get("perclos"),
+            meta.get("pitch"),
+            meta.get("signal_src"),
+        ])
+
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=events.csv"},
+    )
 
 
 def _delete_screenshot(rel_path: str | None) -> None:
