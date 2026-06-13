@@ -9,15 +9,15 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.core.security import hash_token
 from app.models import Device
 
 
 @pytest.fixture
-def device(session: Session, monkeypatch: pytest.MonkeyPatch) -> Device:
-    d = Device(id=uuid.uuid4(), name="DemoJetson", device_token="tok-abc")
+def device(session: Session) -> Device:
+    d = Device(id=uuid.uuid4(), name="DemoJetson", device_token="tok-abc", token_hash=hash_token("tok-abc"))
     session.add(d)
     session.commit()
-    monkeypatch.setattr(settings, "device_tokens", f"{d.id}:tok-abc")
     return d
 
 
