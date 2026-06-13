@@ -27,3 +27,36 @@ def test_verify_credentials_wrong_password():
 
 def test_verify_credentials_wrong_username():
     assert verify_admin_credentials("wrong", "changeme") is False
+
+
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def auth_client():
+    from app.main import create_app
+    return TestClient(create_app())
+
+
+def test_login_success(auth_client):
+    res = auth_client.post("/auth/login", json={"username": "admin", "password": "changeme"})
+    assert res.status_code == 200
+    assert "access_token" in res.cookies
+
+
+def test_login_wrong_password(auth_client):
+    res = auth_client.post("/auth/login", json={"username": "admin", "password": "wrong"})
+    assert res.status_code == 401
+
+
+def test_logout_clears_cookies(auth_client):
+    auth_client.post("/auth/login", json={"username": "admin", "password": "changeme"})
+    res = auth_client.post("/auth/logout")
+    assert res.status_code == 200
+
+
+def test_refresh_rotates_token(auth_client):
+    auth_client.post("/auth/login", json={"username": "admin", "password": "changeme"})
+    res = auth_client.post("/auth/refresh")
+    assert res.status_code == 200
+    assert "access_token" in res.cookies
