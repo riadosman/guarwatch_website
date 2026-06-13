@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,8 +14,11 @@ class Settings(BaseSettings):
     refresh_token_ttl_days: int = 7
     cors_origins: str = "http://localhost:3000"
     admin_username: str = Field(default="admin")
-    admin_password: str = Field(default="changeme")
-    cookie_secure: bool = Field(default=False)
+    admin_password: str = Field(
+        default="changeme",
+        description="Use secrets.compare_digest at call site; set a strong value in production.",
+    )
+    cookie_secure: bool = Field(default=False)  # set True in production (requires HTTPS)
 
     # Demo violation flow
     uploads_dir: Path = Field(default=Path("./uploads"))
@@ -27,6 +30,16 @@ class Settings(BaseSettings):
     min_screenshot_width: int = 1280
     min_screenshot_height: int = 720
     screenshot_strict: bool = False  # True → reject low-res, False → log warning only
+
+    @model_validator(mode="after")
+    def _check_secrets_in_prod(self) -> "Settings":
+        if self.cookie_secure:
+            weak = {"changeme", "change-me", "admin", "password", "secret"}
+            if self.admin_password.lower() in weak:
+                raise ValueError("admin_password must be changed for production (cookie_secure=True)")
+            if self.jwt_secret.lower() in {"change-me", "changeme"}:
+                raise ValueError("jwt_secret must be changed for production (cookie_secure=True)")
+        return self
 
     def device_token_map(self) -> dict[str, str]:
         out: dict[str, str] = {}
