@@ -60,3 +60,14 @@ def test_refresh_rotates_token(auth_client):
     res = auth_client.post("/auth/refresh")
     assert res.status_code == 200
     assert "access_token" in res.cookies
+
+
+def test_list_events_requires_auth(auth_client):
+    res = auth_client.get("/api/events")
+    assert res.status_code == 401
+
+
+def test_list_events_with_auth(auth_client):
+    auth_client.post("/auth/login", json={"username": "admin", "password": "changeme"})
+    res = auth_client.get("/api/events")
+    assert res.status_code == 200

@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import json
+import random
+import time
 import uuid
-from typing import Annotated
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.core.auth import require_auth
 from app.core.deps import DbSession, require_device_auth
-from app.models import Event
+from app.models import Device, Event
 from app.schemas.event import EventIn, EventOut
 from app.services.event_store import EventAlreadyExists, create_event
 from app.services.image_validator import validate_screenshot
@@ -18,6 +24,8 @@ from app.services.panel_hub import hub
 from app.services.upload_log import log_upload, timer
 
 router = APIRouter(prefix="/api", tags=["events"])
+
+SAMPLE_IMAGE_PATH = Path(__file__).resolve().parent.parent / "assets" / "sample_violation.jpg"
 
 
 def _to_out(event: Event) -> EventOut:
@@ -117,9 +125,77 @@ async def post_event(
 
 
 @router.get("/events")
-def list_events(db: DbSession, limit: int = 50) -> list[EventOut]:
+def list_events(db: DbSession, _: Annotated[str, Depends(require_auth)], limit: int = 50) -> list[EventOut]:
     limit = max(1, min(limit, 200))
     rows = (
         db.execute(select(Event).order_by(Event.occurred_at.desc()).limit(limit)).scalars().all()
     )
     return [_to_out(r) for r in rows]
+
+
+def _delete_screenshot(rel_path: str | None) -> None:
+    if not rel_path:
+        return
+    abs_path = settings.uploads_dir / rel_path
+    try:
+        abs_path.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+@router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_event(event_id: int, db: DbSession, _: Annotated[str, Depends(require_auth)]) -> None:
+    event = db.get(Event, event_id)
+    if event is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "event not found")
+    _delete_screenshot(event.screenshot_path)
+    db.delete(event)
+    db.commit()
+    await hub.broadcast({"type": "event_deleted", "payload": {"id": event_id}})
+
+
+@router.delete("/events", status_code=status.HTTP_204_NO_CONTENT)
+async def clear_all_events(db: DbSession, _: Annotated[str, Depends(require_auth)]) -> None:
+    rows = db.execute(select(Event)).scalars().all()
+    deleted_ids = [ev.id for ev in rows]
+    for ev in rows:
+        _delete_screenshot(ev.screenshot_path)
+        db.delete(ev)
+    db.commit()
+    await hub.broadcast({"type": "events_cleared", "payload": {"ids": deleted_ids}})
+
+
+class SimulateEventIn(BaseModel):
+    type: Literal["GOZ_KAPALI", "HAREKETSIZ", "UYUYOR", "TAKIP_KAYBEDILDI"]
+
+
+@router.post("/dev/simulate-event", status_code=status.HTTP_201_CREATED)
+async def simulate_event(payload: SimulateEventIn, db: DbSession) -> EventOut:
+    device = db.execute(select(Device).limit(1)).scalar_one_or_none()
+    if device is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "no devices seeded")
+
+    if not SAMPLE_IMAGE_PATH.exists():
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "sample image missing on backend")
+
+    metadata: dict[str, float | str | bool] = {
+        "perclos": round(random.uniform(55, 95), 1),
+        "pitch": round(random.uniform(-25, 30), 1),
+        "signal_src": random.choice(["MP", "POSE"]),
+        "simulated": True,
+    }
+
+    event_in = EventIn(
+        agent_event_id=int(time.time() * 1000) % (2**31),
+        type=payload.type,  # type: ignore[arg-type]
+        track_id=random.randint(1, 99),
+        occurred_at=datetime.now(tz=timezone.utc),
+        metadata=metadata,
+    )
+
+    event = create_event(db, device.id, event_in, SAMPLE_IMAGE_PATH.read_bytes())
+    db.commit()
+    db.refresh(event)
+    out = _to_out(event)
+    await hub.broadcast({"type": "event_created", "payload": out.model_dump(mode="json")})
+    return out

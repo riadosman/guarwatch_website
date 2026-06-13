@@ -49,4 +49,6 @@ def uploads_tmp(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 def client(uploads_tmp: Path) -> TestClient:
     from app.main import create_app
 
-    return TestClient(create_app())
+    tc = TestClient(create_app())
+    tc.post("/auth/login", json={"username": "admin", "password": "changeme"})
+    return tc
