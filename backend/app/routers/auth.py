@@ -46,7 +46,9 @@ async def refresh(response: Response, refresh_token: Annotated[str | None, Cooki
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "no refresh token")
     try:
         payload = decode_token(refresh_token, settings.jwt_secret, settings.jwt_algorithm)
-        sub = payload.get("sub", "admin")
+        sub = payload.get("sub")
+        if not sub:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid refresh token")
     except JWTError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid refresh token")
     access = create_token(sub, timedelta(minutes=settings.access_token_ttl_min), settings.jwt_secret, settings.jwt_algorithm)
