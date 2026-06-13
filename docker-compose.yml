@@ -21,7 +21,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://fleet:fleet@postgres:5432/fleet
-      JWT_SECRET: dev-secret-change-me
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       CORS_ORIGINS: http://localhost:3000
       UPLOADS_DIR: /uploads
       DEVICE_TOKENS: 00000000-0000-0000-0000-000000000001:dev-token

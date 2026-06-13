@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   if (!token) return NextResponse.redirect(new URL("/login", request.url));
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "change-me");
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret-change-me");
     await jwtVerify(token, secret);
     return NextResponse.next();
   } catch {
