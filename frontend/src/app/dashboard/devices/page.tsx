@@ -13,6 +13,14 @@ import {
   getDevices,
   renameDevice,
 } from "@/lib/devices";
+import {
+  type WebhookConfig,
+  type WebhookConfigCreate,
+  createWebhook,
+  deleteWebhook,
+  getWebhooks,
+  patchWebhook,
+} from "@/lib/webhooks";
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -22,9 +30,13 @@ export default function DevicesPage() {
   const [copied, setCopied] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
+  const [webhookFormOpen, setWebhookFormOpen] = useState(false);
+  const [webhookForm, setWebhookForm] = useState<WebhookConfigCreate>({ name: "", url: "", event_types: [] });
 
   useEffect(() => {
     getDevices().then(setDevices).catch(() => {});
+    getWebhooks().then(setWebhooks).catch(() => {});
   }, []);
 
   async function handleCreate(e: React.FormEvent) {
@@ -45,6 +57,25 @@ export default function DevicesPage() {
     const updated = await renameDevice(id, renameVal);
     setDevices((prev) => prev.map((d) => (d.id === id ? updated : d)));
     setRenamingId(null);
+  }
+
+  async function handleCreateWebhook(e: React.FormEvent) {
+    e.preventDefault();
+    const wh = await createWebhook(webhookForm);
+    setWebhooks((prev) => [wh, ...prev]);
+    setWebhookFormOpen(false);
+    setWebhookForm({ name: "", url: "", event_types: [] });
+  }
+
+  async function handleToggleWebhook(id: string, enabled: boolean) {
+    const updated = await patchWebhook(id, { enabled });
+    setWebhooks((prev) => prev.map((w) => (w.id === id ? updated : w)));
+  }
+
+  async function handleDeleteWebhook(id: string) {
+    if (!confirm("Bu webhook'u silmek istediğinizden emin misiniz?")) return;
+    await deleteWebhook(id);
+    setWebhooks((prev) => prev.filter((w) => w.id !== id));
   }
 
   function copySnippet(device: DeviceCreateResult) {
@@ -208,6 +239,116 @@ export default function DevicesPage() {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Webhook Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-zinc-900">Webhook Uyarıları</h2>
+            <button
+              onClick={() => setWebhookFormOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50"
+            >
+              <Plus className="h-4 w-4" /> Webhook Ekle
+            </button>
+          </div>
+
+          {webhookFormOpen && (
+            <form
+              onSubmit={handleCreateWebhook}
+              className="rounded-xl border bg-white p-5 shadow-sm space-y-3"
+            >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  placeholder="İsim (örn: Slack)"
+                  value={webhookForm.name}
+                  onChange={(e) => setWebhookForm((f) => ({ ...f, name: e.target.value }))}
+                  required
+                  className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  placeholder="URL"
+                  type="url"
+                  value={webhookForm.url}
+                  onChange={(e) => setWebhookForm((f) => ({ ...f, url: e.target.value }))}
+                  required
+                  className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500 mb-1.5">Olay türleri (boş = tümü)</p>
+                <div className="flex flex-wrap gap-2">
+                  {(["UYUYOR", "GOZ_KAPALI", "HAREKETSIZ", "TAKIP_KAYBEDILDI"] as const).map((t) => (
+                    <label key={t} className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={(webhookForm.event_types ?? []).includes(t)}
+                        onChange={(e) => {
+                          setWebhookForm((f) => ({
+                            ...f,
+                            event_types: e.target.checked
+                              ? [...(f.event_types ?? []), t]
+                              : (f.event_types ?? []).filter((x) => x !== t),
+                          }));
+                        }}
+                      />
+                      {t}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600">
+                  Kaydet
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWebhookFormOpen(false)}
+                  className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-3">
+            {webhooks.length === 0 && (
+              <p className="text-sm text-zinc-500">Henüz webhook yok.</p>
+            )}
+            {webhooks.map((w) => (
+              <div key={w.id} className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-zinc-900">{w.name}</p>
+                  <p className="text-xs text-zinc-400 truncate">{w.url}</p>
+                  {w.event_types.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {w.event_types.map((t) => (
+                        <span key={t} className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-600">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <label className="flex items-center gap-1.5 text-xs text-zinc-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={w.enabled}
+                    onChange={(e) => handleToggleWebhook(w.id, e.target.checked)}
+                    className="rounded"
+                  />
+                  Aktif
+                </label>
+                <button
+                  onClick={() => handleDeleteWebhook(w.id)}
+                  className="rounded p-1.5 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 text-red-400" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
