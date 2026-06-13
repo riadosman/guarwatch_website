@@ -43,6 +43,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       NEXT_PUBLIC_WS_URL: ws://localhost:8000
+      JWT_SECRET: ${JWT_SECRET:-change-me}
     volumes:
       - ./frontend:/app
       - /app/node_modules
