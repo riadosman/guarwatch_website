@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func as sqlfunc, select
@@ -26,6 +26,7 @@ from app.services.event_store import EventAlreadyExists, create_event
 from app.services.image_validator import validate_screenshot
 from app.services.panel_hub import hub
 from app.services.upload_log import log_upload, timer
+from app.services.webhook_service import dispatch
 
 router = APIRouter(prefix="/api", tags=["events"])
 
@@ -52,6 +53,7 @@ async def post_event(
     db: DbSession,
     payload: Annotated[UploadFile, File()],
     screenshot: Annotated[UploadFile, File()],
+    background_tasks: BackgroundTasks,
 ) -> EventOut:
     image = await screenshot.read()
 
@@ -125,6 +127,7 @@ async def post_event(
         saved_path=event.screenshot_path,
     )
     await hub.broadcast({"type": "event_created", "payload": out.model_dump(mode="json")})
+    background_tasks.add_task(dispatch, db, out)
     return out
 
 

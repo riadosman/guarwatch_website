@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import auth, devices, events, health, ws_panel
+from app.routers import auth, devices, events, health, webhooks, ws_panel
 
 
 def create_app() -> FastAPI:
@@ -22,6 +22,7 @@ def create_app() -> FastAPI:
     app.include_router(ws_panel.router)
     app.include_router(auth.router)
     app.include_router(devices.router)
+    app.include_router(webhooks.router)
 
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=settings.uploads_dir), name="uploads")
