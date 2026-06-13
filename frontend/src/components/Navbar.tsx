@@ -11,13 +11,13 @@ interface Props {
 
 export function Navbar({ variant = "marketing" }: Props) {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950/70 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/60">
+    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-red-500/15 ring-1 ring-red-500/30">
-            <Eye className="h-4 w-4 text-red-400" />
+          <span className="grid h-8 w-8 place-items-center rounded-md bg-red-100 ring-1 ring-red-300">
+            <Eye className="h-4 w-4 text-red-600" />
           </span>
-          <span className="text-sm font-semibold tracking-tight">
+          <span className="text-sm font-semibold tracking-tight text-zinc-900">
             Guardwatch
             <span className="ml-1 text-zinc-500 font-normal">/ Güvenlik</span>
           </span>
@@ -27,13 +27,13 @@ export function Navbar({ variant = "marketing" }: Props) {
             <>
               <Link
                 href="#features"
-                className="hidden text-xs text-zinc-400 hover:text-zinc-200 sm:block"
+                className="hidden text-xs text-zinc-600 hover:text-zinc-900 sm:block"
               >
                 Özellikler
               </Link>
               <Link
                 href="#how"
-                className="hidden text-xs text-zinc-400 hover:text-zinc-200 sm:block"
+                className="hidden text-xs text-zinc-600 hover:text-zinc-900 sm:block"
               >
                 Nasıl Çalışır
               </Link>
@@ -42,9 +42,30 @@ export function Navbar({ variant = "marketing" }: Props) {
               </Button>
             </>
           ) : (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">← Anasayfa</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/devices">Cihazlar</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/history">Geçmiş</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/">← Anasayfa</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/auth/logout`,
+                    { method: "POST", credentials: "include" }
+                  );
+                  window.location.href = "/login";
+                }}
+              >
+                Çıkış
+              </Button>
+            </div>
           )}
         </nav>
       </div>
