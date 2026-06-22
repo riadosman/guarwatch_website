@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -21,3 +22,6 @@ class Device(Base):
     )
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     token_hash: Mapped[str] = mapped_column(String(64), nullable=False, server_default="")
+    is_online: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    last_seen: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    camera_health: Mapped[Any | None] = mapped_column(JSON, nullable=True)

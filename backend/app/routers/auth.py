@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from jose import JWTError
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.core.auth import (
@@ -15,6 +16,9 @@ from app.core.auth import (
     set_auth_cookies,
     verify_admin_credentials,
 )
+from app.core.deps import get_db
+from app.core.security import hash_token
+from app.models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,11 +29,19 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login")
-async def login(body: LoginRequest, response: Response) -> dict:
-    if not verify_admin_credentials(body.username, body.password):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")
-    access = create_token("admin", timedelta(minutes=settings.access_token_ttl_min), settings.jwt_secret, settings.jwt_algorithm)
-    refresh = create_token("admin", timedelta(days=settings.refresh_token_ttl_days), settings.jwt_secret, settings.jwt_algorithm)
+async def login(body: LoginRequest, response: Response, db: Session = Depends(get_db)) -> dict:
+    # Try DB user first
+    db_user = db.query(User).filter(User.username == body.username).first()
+    if db_user:
+        if hash_token(body.password) != db_user.password_hash:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")
+    else:
+        # Fallback to config admin
+        if not verify_admin_credentials(body.username, body.password):
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")
+
+    access = create_token(body.username, timedelta(minutes=settings.access_token_ttl_min), settings.jwt_secret, settings.jwt_algorithm)
+    refresh = create_token(body.username, timedelta(days=settings.refresh_token_ttl_days), settings.jwt_secret, settings.jwt_algorithm)
     set_auth_cookies(response, access, refresh)
     return {"ok": True}
 
