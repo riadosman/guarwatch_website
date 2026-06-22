@@ -27,7 +27,8 @@ class PairingService:
         self._codes[code] = _Entry(device_id=device_id)
         return code
 
-    def validate_and_consume(self, code: str) -> Optional[str]:
+    def validate(self, code: str) -> Optional[str]:
+        """Kodu doğrula ama tüketme — backend kaydı başarılıysa consume() çağır."""
         normalized = code.upper()
         entry = self._codes.get(normalized)
         if entry is None:
@@ -35,5 +36,13 @@ class PairingService:
         if time.time() - entry.created_at > PAIRING_TTL_SECONDS:
             del self._codes[normalized]
             return None
-        del self._codes[normalized]
         return entry.device_id
+
+    def consume(self, code: str) -> None:
+        self._codes.pop(code.upper(), None)
+
+    def validate_and_consume(self, code: str) -> Optional[str]:
+        device_id = self.validate(code)
+        if device_id:
+            self.consume(code)
+        return device_id

@@ -110,10 +110,14 @@ class PairRequest(BaseModel):
 
 @app.post("/pair")
 async def pair_device(req: PairRequest):
-    device_id = pairing.validate_and_consume(req.code)
+    device_id = pairing.validate(req.code)
     if device_id is None:
         raise HTTPException(status_code=400, detail="Invalid or expired pairing code")
-    token = await _register_device_in_backend(device_id, req.name)
+    try:
+        token = await _register_device_in_backend(device_id, req.name)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Backend kaydi basarisiz: {exc}")
+    pairing.consume(req.code)
     await manager.send(device_id, {"ch": 0, "type": "paired", "token": token})
     return {"device_id": device_id, "token": token}
 
