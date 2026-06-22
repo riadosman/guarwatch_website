@@ -22,7 +22,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://fleet:fleet@postgres:5432/fleet
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
-      CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       UPLOADS_DIR: /uploads
       DEVICE_TOKENS: 00000000-0000-0000-0000-000000000001:dev-token
       RELAY_URL: http://relay:8765
@@ -43,8 +43,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_WS_URL: ws://localhost:8000
+      NEXT_PUBLIC_API_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      NEXT_PUBLIC_WS_URL: ${RELAY_PUBLIC_WS_URL:-ws://localhost:8765}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       BACKEND_INTERNAL_URL: http://backend:8000
     volumes:
@@ -81,6 +81,16 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - relay
+      - frontend
 
 volumes:
   postgres_data:
