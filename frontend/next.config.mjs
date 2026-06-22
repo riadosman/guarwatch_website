@@ -12,6 +12,10 @@ const nextConfig = {
         source: "/api/:path*",
         destination: `${backendUrl}/api/:path*`,
       },
+      {
+        source: "/relay/:path*",
+        destination: `${backendUrl}/relay/:path*`,
+      },
     ];
   },
 };

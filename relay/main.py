@@ -16,6 +16,7 @@ terminal_hub = TerminalHub()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 AGENT_SECRET = os.getenv("AGENT_SECRET", "")  # empty = auth disabled
+BACKEND_API_KEY = os.getenv("BACKEND_API_KEY", "changeme")
 
 
 app = FastAPI(title="GuardWatch Relay", version="2.0.0")
@@ -122,8 +123,9 @@ async def pair_device(req: PairRequest):
 async def _register_device_in_backend(device_id: str, name: str) -> str:
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"{BACKEND_URL}/devices",
+            f"{BACKEND_URL}/relay/register",
             json={"device_id": device_id, "name": name},
+            headers={"X-Relay-Key": BACKEND_API_KEY},
             timeout=5.0,
         )
         resp.raise_for_status()
