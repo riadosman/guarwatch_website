@@ -43,8 +43,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       NEXT_PUBLIC_WS_URL: ws://localhost:8000
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
-      BACKEND_INTERNAL_URL: http://backend:8000
+      JWT_SECRET: ${JWT_SECRET:-change-me}
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -68,7 +67,7 @@ services:
 
   relay:
     build:
-      context: ./guardwatch_website/relay
+      context: ./relay
     ports:
       - "8765:8765"
     environment:
