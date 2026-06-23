@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   ChevronDown,
@@ -306,6 +307,15 @@ export default function DevicesPage() {
               >
                 {d.status === "online" ? "Çevrimiçi" : "Çevrimdışı"}
               </span>
+              {d.status === "online" && (
+                <Link
+                  href={`/dashboard/devices/${d.id}/terminal`}
+                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  title="Terminali aç"
+                >
+                  <Terminal className="h-4 w-4 text-zinc-400" />
+                </Link>
+              )}
               <button
                 onClick={() => { setRenamingId(d.id); setRenameVal(d.name); }}
                 className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
