@@ -3,6 +3,18 @@
 import { useState } from "react";
 import { Eye } from "lucide-react";
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1200;
+
+async function attemptLogin(username: string, password: string): Promise<Response> {
+  return fetch("/auth/login", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+}
+
 export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,24 +23,39 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     const fd = new FormData(e.currentTarget);
-    try {
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") }),
-      });
-      if (res.ok) {
-        window.location.href = "/dashboard";
-      } else {
-        setError("Kullanıcı adı veya şifre hatalı.");
+    const username = String(fd.get("username") ?? "");
+    const password = String(fd.get("password") ?? "");
+
+    let lastError = "";
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await attemptLogin(username, password);
+        if (res.ok) {
+          window.location.href = "/dashboard";
+          return;
+        }
+        // 401 = gerçekten yanlış şifre — retry etme
+        if (res.status === 401) {
+          setError("Kullanıcı adı veya şifre hatalı.");
+          setLoading(false);
+          return;
+        }
+        lastError = `Sunucu hatası (${res.status})`;
+      } catch {
+        // Ağ hatası (ECONNRESET vb.) — yeniden dene
+        lastError = "Bağlantı hatası, yeniden deneniyor…";
       }
-    } catch {
-      setError("Sunucuya bağlanılamadı.");
-    } finally {
-      setLoading(false);
+
+      if (attempt < MAX_RETRIES) {
+        setError(`${lastError} (${attempt}/${MAX_RETRIES})`);
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      }
     }
+
+    setError("Sunucuya bağlanılamadı. Lütfen sayfayı yenileyip tekrar deneyin.");
+    setLoading(false);
   }
 
   return (
