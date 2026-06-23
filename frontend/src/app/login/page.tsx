@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
 export default function LoginPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,14 +13,14 @@ export default function LoginPage() {
     setError("");
     const fd = new FormData(e.currentTarget);
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch("/auth/login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") }),
       });
       if (res.ok) {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         setError("Kullanıcı adı veya şifre hatalı.");
       }
