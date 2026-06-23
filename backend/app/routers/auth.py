@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.core.auth import (
+    _verify_jwt,
     clear_auth_cookies,
     create_token,
     decode_token,
@@ -30,13 +31,11 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 async def login(body: LoginRequest, response: Response, db: Session = Depends(get_db)) -> dict:
-    # Try DB user first
     db_user = db.query(User).filter(User.username == body.username).first()
     if db_user:
         if hash_token(body.password) != db_user.password_hash:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")
     else:
-        # Fallback to config admin
         if not verify_admin_credentials(body.username, body.password):
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")
 
@@ -44,6 +43,50 @@ async def login(body: LoginRequest, response: Response, db: Session = Depends(ge
     refresh = create_token(body.username, timedelta(days=settings.refresh_token_ttl_days), settings.jwt_secret, settings.jwt_algorithm)
     set_auth_cookies(response, access, refresh)
     return {"ok": True}
+
+
+@router.get("/me")
+async def get_me(
+    access_token: Annotated[str | None, Cookie()] = None,
+    db: Session = Depends(get_db),
+) -> dict:
+    sub = _verify_jwt(access_token)
+    if sub is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not authenticated")
+
+    user = db.query(User).filter(User.username == sub).first()
+    if user is None:
+        # Config-only admin (no DB row) — treat as super admin
+        return {
+            "username": sub,
+            "role": "SuperAdmin",
+            "role_id": None,
+            "permissions": {},
+            "is_super_admin": True,
+        }
+
+    permissions: dict = {}
+    role_name: str | None = None
+    if user.role:
+        role_name = user.role.name
+        for perm in user.role.permissions:
+            permissions[perm.service] = {
+                "read": perm.can_read,
+                "create": perm.can_create,
+                "update": perm.can_update,
+                "delete": perm.can_delete,
+            }
+
+    # SuperAdmin role always has full access
+    is_super = role_name == "SuperAdmin"
+
+    return {
+        "username": user.username,
+        "role": role_name,
+        "role_id": user.role_id,
+        "permissions": permissions,
+        "is_super_admin": is_super,
+    }
 
 
 @router.post("/logout")

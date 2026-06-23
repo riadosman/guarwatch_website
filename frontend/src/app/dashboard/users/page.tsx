@@ -1,141 +1,142 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Plus, Trash2, UserCircle } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
-interface User {
-  id: number;
-  username: string;
-  role_id: number | null;
-  group_ids: number[];
-}
+interface Role { id: number; name: string }
+interface User { id: number; username: string; role_id: number | null; group_ids: number[] }
 
-interface Role {
-  id: number;
-  name: string;
-}
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+const creds = { credentials: "include" as const };
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ username: "", password: "", role_id: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/users").then((r) => r.json()).then(setUsers).catch(() => {});
-    fetch("/api/roles").then((r) => r.json()).then(setRoles).catch(() => {});
+    fetch(`${API}/api/users`, creds).then(r => r.json()).then(setUsers).catch(() => {});
+    fetch(`${API}/api/roles`, creds).then(r => r.json()).then(setRoles).catch(() => {});
   }, []);
 
-  const createUser = async () => {
-    const resp = await fetch("/api/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: form.username,
-        password: form.password,
-        role_id: form.role_id ? parseInt(form.role_id) : null,
-      }),
-    });
-    if (resp.ok) {
-      const user = await resp.json();
-      setUsers((prev) => [...prev, user]);
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API}/api/users`, {
+        ...creds,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: form.username,
+          password: form.password,
+          role_id: form.role_id ? parseInt(form.role_id) : null,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.detail ?? `Hata: ${res.status}`);
+        return;
+      }
+      const user = await res.json();
+      setUsers(prev => [...prev, user]);
       setCreating(false);
       setForm({ username: "", password: "", role_id: "" });
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
-  const deleteUser = async (id: number) => {
-    await fetch(`/api/users/${id}`, { method: "DELETE" });
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-  };
+  async function handleDelete(id: number) {
+    if (!confirm("Bu kullanıcıyı silmek istediğinizden emin misiniz?")) return;
+    await fetch(`${API}/api/users/${id}`, { ...creds, method: "DELETE" });
+    setUsers(prev => prev.filter(u => u.id !== id));
+  }
 
-  const roleName = (roleId: number | null) =>
-    roles.find((r) => r.id === roleId)?.name ?? "Rol yok";
+  const roleName = (id: number | null) => roles.find(r => r.id === id)?.name ?? "Rol yok";
 
   return (
-    <div className="p-6 max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Kullanıcı Yönetimi</h1>
-        <button
-          onClick={() => setCreating(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium"
-        >
-          + Kullanıcı Ekle
-        </button>
-      </div>
-
-      {creating && (
-        <div className="mb-6 p-4 border border-gray-700 rounded-lg space-y-3">
-          <input
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            placeholder="Kullanıcı adı"
-            value={form.username}
-            onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-          />
-          <input
-            type="password"
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            placeholder="Şifre"
-            value={form.password}
-            onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-          />
-          <select
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            value={form.role_id}
-            onChange={(e) => setForm((f) => ({ ...f, role_id: e.target.value }))}
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <Navbar variant="app" />
+      <main className="mx-auto max-w-3xl px-4 py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Kullanici Yonetimi</h1>
+          <button
+            onClick={() => setCreating(v => !v)}
+            className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            <option value="">Rol seç...</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-          <div className="flex gap-2">
-            <button
-              onClick={createUser}
-              className="px-4 py-2 bg-green-700 hover:bg-green-600 rounded text-sm"
-            >
-              Oluştur
-            </button>
-            <button
-              onClick={() => setCreating(false)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm"
-            >
-              İptal
-            </button>
-          </div>
+            <Plus className="h-4 w-4" /> Kullanici Ekle
+          </button>
         </div>
-      )}
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-gray-400 border-b border-gray-700">
-            <th className="pb-2">Kullanıcı</th>
-            <th className="pb-2">Rol</th>
-            <th className="pb-2">Grup</th>
-            <th className="pb-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-b border-gray-800">
-              <td className="py-3">{u.username}</td>
-              <td className="py-3">
-                <span className="px-2 py-0.5 bg-blue-900 text-blue-200 rounded text-xs">
-                  {roleName(u.role_id)}
-                </span>
-              </td>
-              <td className="py-3 text-gray-400">{u.group_ids.length} grup</td>
-              <td className="py-3">
-                <button
-                  onClick={() => deleteUser(u.id)}
-                  className="px-3 py-1 bg-red-900 hover:bg-red-800 rounded text-xs"
-                >
-                  Sil
-                </button>
-              </td>
-            </tr>
+        {creating && (
+          <form onSubmit={handleCreate} className="rounded-xl border bg-white p-5 shadow-sm space-y-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Yeni kullanici</p>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                value={form.username}
+                onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+                placeholder="Kullanici adi"
+                required
+                className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              />
+              <input
+                type="password"
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                placeholder="Sifre"
+                required
+                className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              />
+            </div>
+            <select
+              value={form.role_id}
+              onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            >
+              <option value="">Rol sec (opsiyonel)</option>
+              {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+            <div className="flex gap-2">
+              <button type="submit" disabled={loading} className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600 disabled:opacity-50">
+                {loading ? "Kaydediliyor..." : "Olustur"}
+              </button>
+              <button type="button" onClick={() => { setCreating(false); setError(""); }} className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                Iptal
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="space-y-2">
+          {users.length === 0 && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Henuz kullanici yok.</p>
+          )}
+          {users.map(u => (
+            <div key={u.id} className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                <UserCircle className="h-5 w-5 text-zinc-400" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{u.username}</p>
+                <p className="text-xs text-zinc-400">{u.group_ids.length} grup</p>
+              </div>
+              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                {roleName(u.role_id)}
+              </span>
+              <button onClick={() => handleDelete(u.id)} className="rounded p-1.5 hover:bg-red-50">
+                <Trash2 className="h-4 w-4 text-red-400" />
+              </button>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </main>
     </div>
   );
 }
