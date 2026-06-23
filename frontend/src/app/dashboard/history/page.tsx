@@ -38,27 +38,36 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <Navbar variant="app" />
       <main className="mx-auto max-w-6xl px-4 py-8 space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-zinc-900">İhlal Geçmişi</h1>
-            <p className="text-sm text-zinc-400">{data.total} kayıt</p>
+            <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">İhlal Geçmişi</h1>
+            <p className="text-sm text-zinc-400 dark:text-zinc-500">{data.total} kayıt</p>
           </div>
-          <a
-            href={buildExportUrl(filters)}
-            download="events.csv"
-            className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50"
-          >
-            <Download className="h-4 w-4" /> CSV İndir
-          </a>
+          {data.total > 0 ? (
+            <a
+              href={buildExportUrl(filters)}
+              download="events.csv"
+              className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              <Download className="h-4 w-4" /> CSV İndir
+            </a>
+          ) : (
+            <span
+              title="İndirilecek kayıt yok"
+              className="flex cursor-not-allowed items-center gap-1.5 rounded-lg border px-3 py-2 text-sm opacity-40 dark:border-zinc-700 dark:text-zinc-500"
+            >
+              <Download className="h-4 w-4" /> CSV İndir
+            </span>
+          )}
         </div>
 
-        <div className="flex flex-wrap gap-3 rounded-xl border bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap gap-3 rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
           <select
             onChange={(e) => updateFilter({ device_id: e.target.value || undefined })}
-            className="rounded-lg border px-3 py-2 text-sm"
+            className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           >
             <option value="">Tüm Cihazlar</option>
             {devices.map((d) => (
@@ -71,7 +80,7 @@ export default function HistoryPage() {
             onChange={(e) =>
               updateFilter({ type: (e.target.value as ViolationType) || undefined })
             }
-            className="rounded-lg border px-3 py-2 text-sm"
+            className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           >
             <option value="">Tüm Türler</option>
             {TYPES.map((t) => (
@@ -83,12 +92,12 @@ export default function HistoryPage() {
           <input
             type="date"
             onChange={(e) => updateFilter({ from_date: e.target.value || undefined })}
-            className="rounded-lg border px-3 py-2 text-sm"
+            className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           />
           <input
             type="date"
             onChange={(e) => updateFilter({ to_date: e.target.value || undefined })}
-            className="rounded-lg border px-3 py-2 text-sm"
+            className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           />
         </div>
 
@@ -99,17 +108,17 @@ export default function HistoryPage() {
             <button
               disabled={filters.page === 1}
               onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) - 1 }))}
-              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-40 hover:bg-zinc-50"
+              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-40 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               ← Önceki
             </button>
-            <span className="text-sm text-zinc-500">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
               Sayfa {data.page} / {data.pages}
             </span>
             <button
               disabled={filters.page === data.pages}
               onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) + 1 }))}
-              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-40 hover:bg-zinc-50"
+              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-40 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Sonraki →
             </button>

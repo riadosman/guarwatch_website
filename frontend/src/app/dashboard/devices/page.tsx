@@ -2,24 +2,20 @@
 
 import { useEffect, useState } from "react";
 import {
-  Check,
   ChevronDown,
-  Copy,
   HelpCircle,
   Link2,
   PenLine,
-  Plus,
   Terminal,
   Trash2,
   Wifi,
   WifiOff,
+  Plus,
 } from "lucide-react";
 
 import { Navbar } from "@/components/Navbar";
 import {
   type Device,
-  type DeviceCreateResult,
-  createDevice,
   deleteDevice,
   getDevices,
   renameDevice,
@@ -47,7 +43,7 @@ function InfoPanel() {
         <div className="flex items-center gap-2">
           <HelpCircle className="h-4 w-4 text-blue-500 shrink-0" />
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-            Bu sayfa ne yapar? Hangi butonu kullanmalıyım?
+            Bu sayfa ne yapar? Nasıl Jetson bağlarım?
           </span>
         </div>
         <ChevronDown
@@ -57,75 +53,46 @@ function InfoPanel() {
 
       {open && (
         <div className="border-t border-blue-100 px-4 pb-4 pt-3 space-y-4 dark:border-blue-900/40">
-          {/* Sayfa açıklaması */}
           <p className="text-sm text-zinc-600 dark:text-zinc-300">
             Bu sayfa sisteme bağlı tüm <strong>Jetson cihazlarını</strong> yönetir.
-            Her cihazın online/offline durumunu görürsün, terminaline bağlanabilir,
+            Her cihazın online/offline durumunu görür, terminaline bağlanabilir,
             kamera sağlığını izleyebilirsin.
           </p>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {/* Eşleştir */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-1.5 dark:border-zinc-700 dark:bg-zinc-900">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                  Eşleştir
-                </span>
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                  Önerilen
-                </span>
-              </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Gerçek bir Jetson cihazını bağlamak için kullanılır.
-              </p>
-              <ol className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 pl-3 list-decimal">
-                <li>Jetson'da bootstrap komutu çalıştır</li>
-                <li>Ekranda çıkan <strong className="text-zinc-700 dark:text-zinc-200">6 haneli kodu</strong> buraya gir</li>
-                <li>Cihaza isim ver → Eşleştir</li>
-                <li>Cihaz listede <span className="text-emerald-600 font-medium">Çevrimiçi</span> görünür</li>
-              </ol>
-              <p className="text-[11px] text-zinc-400 dark:text-zinc-500 pt-0.5">
-                Kod Jetson terminalinde şöyle çıkar:<br />
-                <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 rounded">ESLESTIRME KODU: A1B2C3</code>
-              </p>
+          <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-1.5 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                Eşleştir — Jetson bağlama adımları
+              </span>
             </div>
-
-            {/* Cihaz Ekle */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-1.5 dark:border-zinc-700 dark:bg-zinc-900">
-              <div className="flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-zinc-400 shrink-0" />
-                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                  Cihaz Ekle
-                </span>
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                  Manuel
-                </span>
-              </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Cihaz ID ve Token <strong>elle oluşturur</strong> — agent kurulumunu
-                kendin yapacaksan kullan.
-              </p>
-              <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 pl-3 list-disc">
-                <li>Sistem bir Device ID ve Token üretir</li>
-                <li>Token <strong>yalnızca bir kez</strong> gösterilir</li>
-                <li>Bunu Jetson'daki <code className="font-mono">.env</code> dosyasına eklemen gerekir</li>
-                <li>Agent başladığında cihaz kayıtlı görünür ama önce manuel kurulum gerekir</li>
-              </ul>
+            <ol className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 pl-3 list-decimal">
+              <li>Jetson'da bootstrap komutunu çalıştır (tek seferlik kurulum)</li>
+              <li>Ekranda çıkan <strong className="text-zinc-700 dark:text-zinc-200">6 haneli kodu</strong> buraya gir</li>
+              <li>Cihaza isim ver → Eşleştir</li>
+              <li>Cihaz listede <span className="text-emerald-600 font-medium">Çevrimiçi</span> görünür</li>
+            </ol>
+            <div className="mt-2 rounded bg-amber-50 border border-amber-100 px-2.5 py-2 dark:bg-amber-950/30 dark:border-amber-900/30">
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium mb-0.5">Kodu nasıl alırsın?</p>
+              <code className="text-[11px] font-mono text-amber-800 dark:text-amber-300 break-all">
+                sudo journalctl -u guardwatch-agent -n 20 --no-pager | grep PAIRING_CODE
+              </code>
             </div>
           </div>
 
-          {/* Jetson kodu nasıl alınır */}
-          <div className="rounded-lg border border-amber-100 bg-amber-50 p-3 dark:border-amber-900/30 dark:bg-amber-950/20">
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">
-              Eşleştirme kodunu nasıl alırsın?
-            </p>
-            <p className="text-xs text-amber-600 dark:text-amber-500 leading-relaxed">
-              Jetson'da şu komutu çalıştır — en güncel kodu her zaman buradan görebilirsin:
-            </p>
-            <code className="mt-1.5 block rounded bg-amber-100 px-2.5 py-1.5 text-[11px] font-mono text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 break-all">
-              sudo journalctl -u guardwatch-agent -n 20 --no-pager | grep PAIRING_CODE
-            </code>
+          <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-1.5 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="flex items-center gap-2">
+              <Terminal className="h-4 w-4 text-zinc-400 shrink-0" />
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                Eşleştirilen cihazda neler yapabilirsin?
+              </span>
+            </div>
+            <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 pl-3 list-disc">
+              <li>Cihazın terminaline tarayıcıdan bağlan</li>
+              <li>Bağlı kameraların sağlık durumunu izle</li>
+              <li>Cihazı yeniden adlandır veya sistemden sil</li>
+              <li>İhlal bildirimleri bu cihazdan gelmeye başlar</li>
+            </ul>
           </div>
         </div>
       )}
@@ -137,10 +104,6 @@ function InfoPanel() {
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
-  const [addOpen, setAddOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newDevice, setNewDevice] = useState<DeviceCreateResult | null>(null);
-  const [copied, setCopied] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
@@ -156,14 +119,6 @@ export default function DevicesPage() {
     getDevices().then(setDevices).catch(() => {});
     getWebhooks().then(setWebhooks).catch(() => {});
   }, []);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    const result = await createDevice(newName);
-    setNewDevice(result);
-    setDevices((prev) => [result, ...prev]);
-    setNewName("");
-  }
 
   async function handleDelete(id: string) {
     if (!confirm("Bu cihazı silmek istediğinizden emin misiniz?")) return;
@@ -224,36 +179,20 @@ export default function DevicesPage() {
     }
   }
 
-  function copySnippet(device: DeviceCreateResult) {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const snippet = `echo "DEVICE_ID=${device.id}" >> .env\necho "DEVICE_TOKEN=${device.token}" >> .env\necho "BACKEND_URL=${BACKEND_URL}" >> .env`;
-    navigator.clipboard.writeText(snippet);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <Navbar variant="app" />
       <main className="mx-auto max-w-4xl px-4 py-8 space-y-6">
 
-        {/* Başlık + butonlar */}
+        {/* Başlık + buton */}
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Cihazlar</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setPairOpen((v) => !v); setAddOpen(false); }}
-              className="flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              Eşleştir
-            </button>
-            <button
-              onClick={() => { setAddOpen((v) => !v); setPairOpen(false); }}
-              className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
-            >
-              <Plus className="h-4 w-4" /> Cihaz Ekle
-            </button>
-          </div>
+          <button
+            onClick={() => setPairOpen((v) => !v)}
+            className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
+          >
+            <Link2 className="h-4 w-4" /> Eşleştir
+          </button>
         </div>
 
         {/* Bilgi paneli */}
@@ -302,68 +241,12 @@ export default function DevicesPage() {
           </div>
         )}
 
-        {/* Cihaz Ekle formu */}
-        {addOpen && (
-          <div className="rounded-xl border bg-white p-5 shadow-sm space-y-3 dark:border-zinc-700 dark:bg-zinc-900">
-            {newDevice ? (
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Cihaz oluşturuldu. Token yalnızca bir kez gösterilir:
-                </p>
-                <pre className="rounded bg-zinc-100 p-3 text-xs overflow-x-auto dark:bg-zinc-800 dark:text-zinc-300">
-                  {`echo "DEVICE_ID=${newDevice.id}" >> .env\necho "DEVICE_TOKEN=${newDevice.token}" >> .env\necho "BACKEND_URL=${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}" >> .env`}
-                </pre>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => copySnippet(newDevice)}
-                    className="flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5 text-green-600" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}{" "}
-                    Kopyala
-                  </button>
-                  <button
-                    onClick={() => { setAddOpen(false); setNewDevice(null); }}
-                    className="rounded border px-3 py-1.5 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Kapat
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleCreate} className="flex gap-2">
-                <input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Cihaz adı (örn: Kule-1)"
-                  required
-                  className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
-                >
-                  Oluştur
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAddOpen(false)}
-                  className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                  İptal
-                </button>
-              </form>
-            )}
-          </div>
-        )}
-
         {/* Cihaz listesi */}
         <div className="space-y-3">
           {devices.length === 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Henüz cihaz yok.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Henüz cihaz yok. Jetson'u bağlamak için yukarıdaki <strong>Eşleştir</strong> butonunu kullan.
+            </p>
           )}
           {devices.map((d) => (
             <div
@@ -442,10 +325,16 @@ export default function DevicesPage() {
         {/* Webhook bölümü */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Webhook Uyarıları</h2>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Webhook Uyarıları</h2>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                İhlal tespit edildiğinde belirtilen URL'ye otomatik HTTP POST gönderilir.
+                Slack, Teams, Discord veya kendi sisteminize anlık bildirim almak için kullanın.
+              </p>
+            </div>
             <button
               onClick={() => setWebhookFormOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 shrink-0"
             >
               <Plus className="h-4 w-4" /> Webhook Ekle
             </button>
@@ -465,7 +354,7 @@ export default function DevicesPage() {
                   className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
                 />
                 <input
-                  placeholder="URL"
+                  placeholder="URL (https://hooks.slack.com/...)"
                   type="url"
                   value={webhookForm.url}
                   onChange={(e) => setWebhookForm((f) => ({ ...f, url: e.target.value }))}
@@ -474,7 +363,9 @@ export default function DevicesPage() {
                 />
               </div>
               <div>
-                <p className="text-xs text-zinc-500 mb-1.5 dark:text-zinc-400">Olay türleri (boş = tümü)</p>
+                <p className="text-xs text-zinc-500 mb-1.5 dark:text-zinc-400">
+                  Hangi olaylarda tetiklensin? (boş = tümünde)
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {(["UYUYOR", "GOZ_KAPALI", "HAREKETSIZ", "TAKIP_KAYBEDILDI"] as const).map((t) => (
                     <label key={t} className="flex items-center gap-1.5 text-xs">
@@ -512,7 +403,9 @@ export default function DevicesPage() {
 
           <div className="space-y-3">
             {webhooks.length === 0 && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Henüz webhook yok.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Henüz webhook yok.
+              </p>
             )}
             {webhooks.map((w) => (
               <div key={w.id} className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
@@ -528,8 +421,11 @@ export default function DevicesPage() {
                       ))}
                     </div>
                   )}
+                  {w.event_types.length === 0 && (
+                    <p className="text-[10px] text-zinc-400 mt-0.5">Tüm ihlal türleri</p>
+                  )}
                 </div>
-                <label className="flex items-center gap-1.5 text-xs text-zinc-500 cursor-pointer dark:text-zinc-400">
+                <label className="flex items-center gap-1.5 text-xs text-zinc-500 cursor-pointer dark:text-zinc-400 shrink-0">
                   <input
                     type="checkbox"
                     checked={w.enabled}
@@ -540,7 +436,7 @@ export default function DevicesPage() {
                 </label>
                 <button
                   onClick={() => handleDeleteWebhook(w.id)}
-                  className="rounded p-1.5 hover:bg-red-50"
+                  className="rounded p-1.5 hover:bg-red-50 shrink-0"
                 >
                   <Trash2 className="h-4 w-4 text-red-400" />
                 </button>
