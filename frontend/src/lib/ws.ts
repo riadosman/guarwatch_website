@@ -1,9 +1,8 @@
 import type { PanelMessage } from "./types";
 
-// Panel WebSocket → backend (/ws/panel). NEXT_PUBLIC_API_URL is http://localhost:3000
-// which Next.js proxies to the backend via the /ws/* rewrite in next.config.mjs.
-const rawApi = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-const WS_BASE = rawApi.replace(/^http/, "ws");
+// Panel WebSocket doğrudan backend'e bağlanır (relay değil).
+// Dev: ws://localhost:8000, Production: NEXT_PUBLIC_BACKEND_WS_URL env değişkeni ile override edilir.
+const WS_BASE = process.env.NEXT_PUBLIC_BACKEND_WS_URL ?? "ws://localhost:8000";
 
 export interface PanelHandle {
   close(): void;
