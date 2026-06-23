@@ -1,5 +1,4 @@
-// frontend/src/lib/devices.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export interface Device {
   id: string;
@@ -9,27 +8,12 @@ export interface Device {
   created_at: string;
 }
 
-export interface DeviceCreateResult extends Device {
-  token: string;
-}
-
 function creds(): RequestInit {
   return { credentials: "include" };
 }
 
 export async function getDevices(): Promise<Device[]> {
   const res = await fetch(`${API_URL}/api/devices`, creds());
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
-}
-
-export async function createDevice(name: string): Promise<DeviceCreateResult> {
-  const res = await fetch(`${API_URL}/api/devices`, {
-    ...creds(),
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
-  });
   if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }

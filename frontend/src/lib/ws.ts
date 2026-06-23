@@ -1,6 +1,9 @@
 import type { PanelMessage } from "./types";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000";
+// Panel WebSocket → backend (/ws/panel). NEXT_PUBLIC_API_URL is http://localhost:3000
+// which Next.js proxies to the backend via the /ws/* rewrite in next.config.mjs.
+const rawApi = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+const WS_BASE = rawApi.replace(/^http/, "ws");
 
 export interface PanelHandle {
   close(): void;
@@ -21,7 +24,7 @@ export function openPanelWs(opts: OpenPanelOptions): PanelHandle {
 
   const connect = () => {
     if (closed) return;
-    ws = new WebSocket(`${WS_URL}/ws/panel`);
+    ws = new WebSocket(`${WS_BASE}/ws/panel`);
     ws.onopen = () => {
       backoffMs = 1000;
       onStatusChange?.("open");
@@ -34,7 +37,13 @@ export function openPanelWs(opts: OpenPanelOptions): PanelHandle {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as PanelMessage;
-        if (data?.type === "event_created") onMessage(data);
+        if (
+          data?.type === "event_created" ||
+          data?.type === "event_deleted" ||
+          data?.type === "events_cleared"
+        ) {
+          onMessage(data);
+        }
       } catch {
         // ignore malformed
       }
