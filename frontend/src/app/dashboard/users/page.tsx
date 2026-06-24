@@ -13,6 +13,7 @@ const creds = { credentials: "include" as const };
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [groups, setGroups] = useState<{id: number; name: string}[]>([]);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ username: "", password: "", role_id: "" });
   const [error, setError] = useState("");
@@ -21,6 +22,7 @@ export default function UsersPage() {
   useEffect(() => {
     fetch(`${API}/api/users`, creds).then(r => r.json()).then(setUsers).catch(() => {});
     fetch(`${API}/api/roles`, creds).then(r => r.json()).then(setRoles).catch(() => {});
+    fetch(`${API}/api/groups`, creds).then(r => r.json()).then(setGroups).catch(() => {});
   }, []);
 
   async function handleCreate(e: React.FormEvent) {
@@ -51,6 +53,24 @@ export default function UsersPage() {
       setLoading(false);
     }
   }
+
+  const assignGroups = async (userId: number, groupId: number) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    const current: number[] = user.group_ids ?? [];
+    const updated = current.includes(groupId)
+      ? current.filter((g: number) => g !== groupId)
+      : [...current, groupId];
+    await fetch(`${API}/api/users/${userId}`, {
+      ...creds,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ group_ids: updated }),
+    });
+    setUsers(prev => prev.map(u =>
+      u.id === userId ? { ...u, group_ids: updated } : u
+    ));
+  };
 
   async function handleDelete(id: number) {
     if (!confirm("Bu kullanıcıyı silmek istediğinizden emin misiniz?")) return;
@@ -125,7 +145,21 @@ export default function UsersPage() {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{u.username}</p>
-                <p className="text-xs text-zinc-400">{u.group_ids.length} grup</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {groups.map((g) => (
+                    <label key={g.id} className="flex items-center gap-1 text-xs cursor-pointer text-zinc-500 dark:text-zinc-400">
+                      <input
+                        type="checkbox"
+                        checked={(u.group_ids ?? []).includes(g.id)}
+                        onChange={() => assignGroups(u.id, g.id)}
+                      />
+                      {g.name}
+                    </label>
+                  ))}
+                  {groups.length === 0 && (
+                    <span className="text-xs text-zinc-400">{u.group_ids.length} grup</span>
+                  )}
+                </div>
               </div>
               <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                 {roleName(u.role_id)}

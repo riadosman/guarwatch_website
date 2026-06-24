@@ -58,6 +58,30 @@ async def create_user(
     return user
 
 
+class UserUpdateIn(BaseModel):
+    group_ids: list[int] | None = None
+    role_id: int | None = None
+
+
+@router.patch("/{user_id}", response_model=UserOut)
+async def update_user(
+    user_id: int,
+    body: UserUpdateIn,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_permission("users", "update")),
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(404, "Kullanici bulunamadi")
+    if body.group_ids is not None:
+        user.group_ids = body.group_ids
+    if body.role_id is not None:
+        user.role_id = body.role_id
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 @router.delete("/{user_id}", status_code=204)
 async def delete_user(
     user_id: int,
