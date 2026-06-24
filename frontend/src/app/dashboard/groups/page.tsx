@@ -5,31 +5,93 @@ import { useState, useEffect } from "react";
 interface Group {
   id: number;
   name: string;
-  device_id: string;
-  camera_uris: string[];
+  device_id?: string;
+  camera_uris?: string[];
+}
+
+interface Location {
+  id: number;
+  name: string;
+  il_id?: number;
+  ilce_id?: number;
 }
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", device_id: "", camera_uris: "" });
+  const [form, setForm] = useState({
+    name: "",
+    il_id: 0,
+    ilce_id: 0,
+    mahalle_id: 0,
+  });
+  const [iller, setIller] = useState<Location[]>([]);
+  const [ilceler, setIlceler] = useState<Location[]>([]);
+  const [mahalleler, setMahalleler] = useState<Location[]>([]);
 
+  // Load groups on mount
   useEffect(() => {
     fetch("/api/groups").then((r) => r.json()).then(setGroups).catch(() => {});
   }, []);
 
+  // Load iller on mount
+  useEffect(() => {
+    fetch("/api/locations/iller")
+      .then((r) => r.json())
+      .then(setIller)
+      .catch(() => {});
+  }, []);
+
+  // Load ilceler when il_id changes
+  useEffect(() => {
+    if (!form.il_id) {
+      setIlceler([]);
+      setMahalleler([]);
+      setForm((f) => ({ ...f, ilce_id: 0, mahalle_id: 0 }));
+      return;
+    }
+    fetch(`/api/locations/ilceler?il_id=${form.il_id}`)
+      .then((r) => r.json())
+      .then(setIlceler)
+      .catch(() => {});
+    setForm((f) => ({ ...f, ilce_id: 0, mahalle_id: 0 }));
+    setMahalleler([]);
+  }, [form.il_id]);
+
+  // Load mahalleler when ilce_id changes
+  useEffect(() => {
+    if (!form.ilce_id) {
+      setMahalleler([]);
+      setForm((f) => ({ ...f, mahalle_id: 0 }));
+      return;
+    }
+    fetch(`/api/locations/mahalleler?ilce_id=${form.ilce_id}`)
+      .then((r) => r.json())
+      .then(setMahalleler)
+      .catch(() => {});
+    setForm((f) => ({ ...f, mahalle_id: 0 }));
+  }, [form.ilce_id]);
+
   const createGroup = async () => {
-    const uris = form.camera_uris.split("\n").map((u) => u.trim()).filter(Boolean);
+    if (!form.name || !form.il_id || !form.ilce_id || !form.mahalle_id) {
+      alert("Grup adı ve il, ilçe, mahalle seçimi zorunludur.");
+      return;
+    }
     const resp = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name, device_id: form.device_id, camera_uris: uris }),
+      body: JSON.stringify({
+        name: form.name,
+        il_id: form.il_id,
+        ilce_id: form.ilce_id,
+        mahalle_id: form.mahalle_id,
+      }),
     });
     if (resp.ok) {
       const group = await resp.json();
       setGroups((prev) => [...prev, group]);
       setCreating(false);
-      setForm({ name: "", device_id: "", camera_uris: "" });
+      setForm({ name: "", il_id: 0, ilce_id: 0, mahalle_id: 0 });
     }
   };
 
@@ -58,18 +120,47 @@ export default function GroupsPage() {
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
-          <input
+          <select
             className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            placeholder="Cihaz ID"
-            value={form.device_id}
-            onChange={(e) => setForm((f) => ({ ...f, device_id: e.target.value }))}
-          />
-          <textarea
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm h-24"
-            placeholder={"RTSP URI'leri (her satıra bir tane):\nrtsp://192.168.1.64:554/stream"}
-            value={form.camera_uris}
-            onChange={(e) => setForm((f) => ({ ...f, camera_uris: e.target.value }))}
-          />
+            value={form.il_id}
+            onChange={(e) => setForm((f) => ({ ...f, il_id: Number(e.target.value) }))}
+            required
+          >
+            <option value={0}>-- İl Seçin --</option>
+            {iller.map((il) => (
+              <option key={il.id} value={il.id}>
+                {il.name}
+              </option>
+            ))}
+          </select>
+          <select
+            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm disabled:opacity-50"
+            value={form.ilce_id}
+            onChange={(e) => setForm((f) => ({ ...f, ilce_id: Number(e.target.value) }))}
+            required
+            disabled={!form.il_id}
+          >
+            <option value={0}>-- İlçe Seçin --</option>
+            {ilceler.map((ilce) => (
+              <option key={ilce.id} value={ilce.id}>
+                {ilce.name}
+              </option>
+            ))}
+          </select>
+          <select
+            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm disabled:opacity-50"
+            value={form.mahalle_id}
+            onChange={(e) => setForm((f) => ({ ...f, mahalle_id: Number(e.target.value) }))}
+            required
+            disabled={!form.ilce_id}
+          >
+            <option value={0}>-- Mahalle Seçin --</option>
+            {mahalleler.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
           <div className="flex gap-2">
             <button
               onClick={createGroup}
