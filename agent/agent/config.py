@@ -8,6 +8,8 @@ class AgentSettings(BaseSettings):
     device_id: str = "00000000-0000-0000-0000-000000000001"
     backend_url: str = "http://localhost:8000"
     port: int = 9000
+    relay_ws_url: str = "ws://relay:8765/agent"
+    secret: str = ""
 
 
 settings = AgentSettings()

@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import Boolean, DateTime, String, Text, func
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,3 +25,5 @@ class Device(Base):
     is_online: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     last_seen: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     camera_health: Mapped[Any | None] = mapped_column(JSON, nullable=True)
+    registered_via_bootstrap: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    location: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -41,13 +41,13 @@ const FEATURES = [
 
 export function Features() {
   return (
-    <section id="features" className="border-b border-white/5 py-20 sm:py-28">
+    <section id="features" className="border-b border-zinc-200 bg-zinc-50 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             Her kulübede yapay zeka, merkezde tek panel.
           </h2>
-          <p className="mt-4 text-zinc-400">
+          <p className="mt-4 text-zinc-600">
             Her güvenlik kulübesindeki Jetson, nöbetçi personeli kendi başına
             izler; merkezi panel sadece ihlalleri toplar ve operatöre sunar.
           </p>
@@ -56,13 +56,13 @@ export function Features() {
           {FEATURES.map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="group rounded-xl border border-white/5 bg-white/[0.02] p-6 transition hover:border-white/10 hover:bg-white/[0.04]"
+              className="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-zinc-300 hover:shadow-md"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-lg bg-red-500/10 ring-1 ring-red-500/20">
-                <Icon className="h-5 w-5 text-red-300" />
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-red-50 ring-1 ring-red-200">
+                <Icon className="h-5 w-5 text-red-600" />
               </span>
-              <h3 className="mt-5 text-base font-semibold text-white">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{body}</p>
+              <h3 className="mt-5 text-base font-semibold text-zinc-900">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">{body}</p>
             </div>
           ))}
         </div>

@@ -36,7 +36,7 @@ async def relay_notify(
 
     if body.type == "heartbeat":
         if device:
-            device.last_seen = datetime.utcnow()
+            device.last_seen_at = datetime.utcnow()
             device.is_online = True
             db.commit()
 

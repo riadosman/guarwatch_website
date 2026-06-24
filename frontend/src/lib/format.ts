@@ -13,23 +13,23 @@ export const VIOLATION_TONE: Record<
 > = {
   UYUYOR: {
     dot: "bg-red-500",
-    chip: "bg-red-500/15 text-red-300 border-red-500/30",
-    ring: "ring-red-500/40",
+    chip: "bg-red-100 text-red-700 border-red-300",
+    ring: "ring-red-400",
   },
   GOZ_KAPALI: {
     dot: "bg-orange-500",
-    chip: "bg-orange-500/15 text-orange-300 border-orange-500/30",
-    ring: "ring-orange-500/40",
+    chip: "bg-orange-100 text-orange-700 border-orange-300",
+    ring: "ring-orange-400",
   },
   HAREKETSIZ: {
     dot: "bg-amber-500",
-    chip: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    ring: "ring-amber-500/40",
+    chip: "bg-amber-100 text-amber-700 border-amber-300",
+    ring: "ring-amber-400",
   },
   TAKIP_KAYBEDILDI: {
     dot: "bg-zinc-500",
-    chip: "bg-zinc-500/15 text-zinc-300 border-zinc-500/30",
-    ring: "ring-zinc-500/40",
+    chip: "bg-zinc-100 text-zinc-700 border-zinc-300",
+    ring: "ring-zinc-400",
   },
 };
 

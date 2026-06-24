@@ -56,15 +56,15 @@ function Chip({
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
         active
-          ? "border-white/20 bg-white/10 text-white"
-          : "border-white/5 bg-white/[0.02] text-zinc-400 hover:border-white/10 hover:text-zinc-200"
+          ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+          : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-100"
       }`}
     >
       {dot && <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />}
       {label}
       <span
         className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono ${
-          active ? "bg-black/40 text-zinc-300" : "bg-white/5 text-zinc-500"
+          active ? "bg-white/20 text-zinc-100 dark:bg-zinc-900/20 dark:text-zinc-800" : "bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
         }`}
       >
         {count}

@@ -67,28 +67,28 @@ export function MetadataDisplay({ metadata, trackId, agentEventId }: Props) {
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {metrics.map(({ label, value, unit, icon: Icon, tone = "default" }) => {
         const toneRing = {
-          default: "ring-white/10",
-          warn: "ring-amber-500/30",
-          danger: "ring-red-500/40",
+          default: "ring-zinc-200 dark:ring-zinc-700",
+          warn: "ring-amber-300 dark:ring-amber-700",
+          danger: "ring-red-300 dark:ring-red-700",
         }[tone];
         const toneText = {
-          default: "text-white",
-          warn: "text-amber-200",
-          danger: "text-red-200",
+          default: "text-zinc-900 dark:text-white",
+          warn: "text-amber-700 dark:text-amber-400",
+          danger: "text-red-700 dark:text-red-400",
         }[tone];
 
         return (
           <div
             key={label}
-            className={`rounded-lg bg-white/[0.03] p-3 ring-1 ${toneRing}`}
+            className={`rounded-lg bg-zinc-50 p-3 ring-1 dark:bg-zinc-800 ${toneRing}`}
           >
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-zinc-500">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               <Icon className="h-3 w-3" />
               {label}
             </div>
             <div className={`mt-1.5 text-lg font-semibold ${toneText}`}>
               {value}
-              {unit && <span className="ml-1 text-sm font-normal text-zinc-400">{unit}</span>}
+              {unit && <span className="ml-1 text-sm font-normal text-zinc-500 dark:text-zinc-400">{unit}</span>}
             </div>
           </div>
         );

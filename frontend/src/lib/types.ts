@@ -16,7 +16,7 @@ export interface ViolationEvent {
   metadata: Record<string, unknown>;
 }
 
-export interface PanelMessage {
-  type: "event_created";
-  payload: ViolationEvent;
-}
+export type PanelMessage =
+  | { type: "event_created"; payload: ViolationEvent }
+  | { type: "event_deleted"; payload: { id: number } }
+  | { type: "events_cleared"; payload: { ids: number[] } };

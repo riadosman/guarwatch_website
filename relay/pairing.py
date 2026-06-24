@@ -53,7 +53,15 @@ class PairingService:
     # ── Ana API ──────────────────────────────────────────────
 
     def generate_code(self, device_id: str) -> str:
-        """Cihaz için yeni kod üret (eskisini sil)."""
+        """Cihaz için kod üret. Süresi dolmamış kod varsa onu döndür."""
+        now = time.time()
+        for code, entry in self._codes.items():
+            if entry.device_id == device_id:
+                if now - entry.created_at < PAIRING_TTL_SECONDS:
+                    return code  # mevcut geçerli kodu koru
+                break  # süresi dolmuş, yeni üret
+
+        # Eski kodları temizle, yeni üret
         self._codes = {
             c: e for c, e in self._codes.items()
             if e.device_id != device_id

@@ -26,13 +26,13 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="border-b border-white/5 py-20 sm:py-28">
+    <section id="how" className="border-b border-zinc-200 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             Üç adımda canlı izleme.
           </h2>
-          <p className="mt-4 text-zinc-400">
+          <p className="mt-4 text-zinc-600">
             Mimari sade tutuldu: kenar AI, idempotent kuyruk, tek WebSocket
             kanalı. Hiçbir adımda buluta veya 3. parti SaaS'a bağımlılık yok.
           </p>
@@ -41,16 +41,16 @@ export function HowItWorks() {
           {STEPS.map(({ n, icon: Icon, title, body }) => (
             <li
               key={n}
-              className="relative overflow-hidden rounded-xl border border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent p-6"
+              className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs text-zinc-500">{n}</span>
-                <span className="grid h-9 w-9 place-items-center rounded-md bg-white/5 ring-1 ring-white/10">
-                  <Icon className="h-4 w-4 text-zinc-300" />
+                <span className="grid h-9 w-9 place-items-center rounded-md bg-zinc-100 ring-1 ring-zinc-200">
+                  <Icon className="h-4 w-4 text-zinc-700" />
                 </span>
               </div>
-              <h3 className="mt-6 text-lg font-semibold text-white">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{body}</p>
+              <h3 className="mt-6 text-lg font-semibold text-zinc-900">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">{body}</p>
             </li>
           ))}
         </ol>

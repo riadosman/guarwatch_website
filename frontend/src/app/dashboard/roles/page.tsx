@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Plus, Trash2 } from "lucide-react";
+import { Check, Info, Plus, Trash2 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 
 const SERVICES = ["users","roles","devices","camera_groups","terminal","events","live_view"];
@@ -18,6 +18,16 @@ const SERVICE_LABEL: Record<string, string> = {
   users: "Kullanici", roles: "Rol", devices: "Cihaz",
   camera_groups: "Kamera Grubu", terminal: "Terminal",
   events: "Ihlal Kaydi", live_view: "Canli Izleme",
+};
+
+const SERVICE_DESC: Record<string, string> = {
+  users: "Sisteme giris yapabilen kullanici hesaplarini yonetir. Yeni hesap acma, silme ve role atama islemlerini kapsar.",
+  roles: "Yetki gruplarini (rol) tanimlar. Her role hangi servislerde ne yapilabileceği bu sayfada belirlenir.",
+  devices: "Bagli Jetson cihazlarini yonetir. Cihaz ekleme, silme ve online/offline durumunu goruntuler.",
+  camera_groups: "Kameralari mantiksal gruplara ayirir. Ornegin 'A Binasi' veya 'Vardiya-2' gibi gruplar olusturulabilir.",
+  terminal: "Jetson cihazlarina tarayici uzerinden uzaktan komut satiri erisimi saglar.",
+  events: "Kameralardan gelen uyku/hareketsizlik ihlal kayitlarini gosterir ve disa aktarir.",
+  live_view: "Kameralardan canli goruntu izleme yetkisini kontrol eder.",
 };
 
 export default function RolesPage() {
@@ -167,8 +177,15 @@ export default function RolesPage() {
                     {SERVICES.map(svc => (
                       <tr key={svc}>
                         <td className="py-2.5 pr-6 text-sm text-zinc-700 dark:text-zinc-300">
-                          {SERVICE_LABEL[svc] ?? svc}
-                          <span className="ml-2 text-[10px] text-zinc-400">{svc}</span>
+                          <div className="relative inline-flex items-center gap-1.5 group/tip">
+                            <span>{SERVICE_LABEL[svc] ?? svc}</span>
+                            <span className="text-[10px] text-zinc-400">{svc}</span>
+                            <Info className="h-3.5 w-3.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-help shrink-0" />
+                            <div className="pointer-events-none absolute bottom-full left-0 mb-2 w-64 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-600 shadow-lg opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 z-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                              {SERVICE_DESC[svc]}
+                              <div className="absolute top-full left-4 -mt-px border-4 border-transparent border-t-zinc-200 dark:border-t-zinc-700" />
+                            </div>
+                          </div>
                         </td>
                         {ACTIONS.map(action => (
                           <td key={action} className="py-2.5 px-4 text-center">

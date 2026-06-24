@@ -9,7 +9,7 @@ from app.models.user import User
 from app.models.role import Role, RolePermission
 from app.services.rbac import require_permission
 
-router = APIRouter(prefix="/roles", tags=["roles"])
+router = APIRouter(prefix="/api/roles", tags=["roles"])
 
 SERVICES = ["users", "roles", "devices", "camera_groups", "terminal", "events", "live_view"]
 

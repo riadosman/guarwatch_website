@@ -144,5 +144,6 @@ def bootstrap_device(
         raise HTTPException(status_code=401, detail="Gecersiz bootstrap secret")
 
     device, token = create_device(db, body.name)
+    device.registered_via_bootstrap = True
     db.commit()
     return BootstrapOut(device_id=str(device.id), token=token, name=device.name)

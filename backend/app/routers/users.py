@@ -9,7 +9,7 @@ from app.models.user import User
 from app.models.role import Role
 from app.services.rbac import require_permission
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 class UserCreate(BaseModel):

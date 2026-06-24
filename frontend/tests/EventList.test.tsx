@@ -34,7 +34,7 @@ describe("EventList", () => {
     render(<EventList events={items} onSelect={vi.fn()} />);
     expect(screen.getByText(/Uyuyor/)).toBeInTheDocument();
     expect(screen.getByText(/Göz Kapalı/)).toBeInTheDocument();
-    expect(screen.getAllByText(/Takip #7/i)).toHaveLength(2);
+    expect(screen.getAllByText("#7")).toHaveLength(2);
   });
 
   it("calls onSelect with event when card clicked", () => {

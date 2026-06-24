@@ -1,0 +1,13 @@
+# Quick Tunnel overlay — Cloudflare hesabi gerekmez
+# Kullanim:
+#   docker compose -f docker-compose.yml -f docker-compose.quicktunnel.yml up -d
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://relay:8765
+    environment:
+      TUNNEL_TOKEN: "quicktunnel-placeholder"
+    depends_on:
+      - relay

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getEvents } from "@/lib/api";
 import type { ViolationEvent } from "@/lib/types";
@@ -30,11 +30,20 @@ export function useEventStream() {
   useEffect(() => {
     const handle = openPanelWs({
       onMessage: (msg) => {
-        setEvents((prev) => {
-          if (prev.some((e) => e.id === msg.payload.id)) return prev;
-          return [msg.payload, ...prev];
-        });
-        setLatest(msg.payload);
+        if (msg.type === "event_created") {
+          setEvents((prev) => {
+            if (prev.some((e) => e.id === msg.payload.id)) return prev;
+            return [msg.payload, ...prev];
+          });
+          setLatest(msg.payload);
+        } else if (msg.type === "event_deleted") {
+          const removedId = msg.payload.id;
+          setEvents((prev) => prev.filter((e) => e.id !== removedId));
+          setLatest((cur) => (cur && cur.id === removedId ? null : cur));
+        } else if (msg.type === "events_cleared") {
+          setEvents([]);
+          setLatest(null);
+        }
       },
       onStatusChange: setStatus,
       onReconnect: () => {
@@ -46,5 +55,15 @@ export function useEventStream() {
     return () => handle.close();
   }, []);
 
-  return { events, status, latest };
+  const removeLocal = useCallback((id: number) => {
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    setLatest((cur) => (cur && cur.id === id ? null : cur));
+  }, []);
+
+  const clearLocal = useCallback(() => {
+    setEvents([]);
+    setLatest(null);
+  }, []);
+
+  return { events, status, latest, removeLocal, clearLocal };
 }

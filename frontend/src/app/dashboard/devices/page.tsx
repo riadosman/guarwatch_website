@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   HelpCircle,
@@ -104,6 +105,7 @@ function InfoPanel() {
 // ── Ana sayfa ─────────────────────────────────────────────────────────────────
 
 export default function DevicesPage() {
+  const router = useRouter();
   const [devices, setDevices] = useState<Device[]>([]);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
@@ -163,18 +165,27 @@ export default function DevicesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: pairCode.replace(/-/g, "").toUpperCase(), name: pairName }),
       });
-      if (resp.ok) {
-        const updated = await getDevices();
-        setDevices(updated);
-        setPairOpen(false);
-        setPairCode("");
-        setPairName("");
-      } else {
+      if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
         setPairError(err.detail ?? "Geçersiz veya süresi dolmuş kod.");
+        return;
+      }
+      // Pairing succeeded — close form regardless of what getDevices returns
+      setPairOpen(false);
+      setPairCode("");
+      setPairName("");
+      try {
+        const updated = await getDevices();
+        setDevices(updated);
+      } catch (fetchErr: unknown) {
+        const msg = fetchErr instanceof Error ? fetchErr.message : "";
+        if (msg === "401") {
+          router.push("/login");
+        }
+        // If non-401 error, silently ignore — device was paired, page refresh will show it
       }
     } catch {
-      setPairError("Sunucuya bağlanılamadı.");
+      setPairError("Sunucuya bağlanılamadı. Bağlantınızı kontrol edin.");
     } finally {
       setPairLoading(false);
     }

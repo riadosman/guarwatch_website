@@ -9,7 +9,7 @@ from app.models.user import User
 from app.models.camera_group import CameraGroup
 from app.services.rbac import require_permission
 
-router = APIRouter(prefix="/groups", tags=["groups"])
+router = APIRouter(prefix="/api/groups", tags=["groups"])
 
 
 class GroupCreate(BaseModel):

@@ -142,6 +142,7 @@ async def _notify_backend(device_id: str, event_type: str, data: dict) -> None:
             await client.post(
                 f"{BACKEND_URL}/relay/notify",
                 json={"device_id": device_id, "type": event_type, "data": data},
+                headers={"X-Relay-Key": BACKEND_API_KEY},
                 timeout=2.0,
             )
     except Exception:
