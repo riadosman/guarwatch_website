@@ -118,7 +118,7 @@ async def stream_endpoint(ws: WebSocket, device_id: str, cam_id: str):
         await ws.close(code=4004, reason="Device offline")
         return
 
-    stream_hub.register_browser(device_id, cam_id, ws)
+    await stream_hub.register_browser(device_id, cam_id, ws)
     # Tell Jetson to start streaming this camera
     await manager.send(device_id, {
         "ch": 3,

@@ -24,7 +24,7 @@ class GroupCreate(BaseModel):
 class GroupOut(BaseModel):
     id: int
     name: str
-    device_id: str
+    device_id: str | None = None
     camera_uris: List[str]
     il_id: int | None = None
     ilce_id: int | None = None
@@ -49,7 +49,7 @@ async def create_group(
 ):
     group = CameraGroup(
         name=body.name,
-        device_id=body.device_id or "",
+        device_id=body.device_id,
         camera_uris=body.camera_uris,
         il_id=body.il_id,
         ilce_id=body.ilce_id,

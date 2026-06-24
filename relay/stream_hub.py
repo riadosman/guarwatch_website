@@ -6,7 +6,13 @@ class StreamHub:
         # key: (device_id, cam_id) -> browser WebSocket
         self._streams: dict[tuple[str, str], WebSocket] = {}
 
-    def register_browser(self, device_id: str, cam_id: str, ws: WebSocket) -> None:
+    async def register_browser(self, device_id: str, cam_id: str, ws: WebSocket) -> None:
+        existing = self._streams.get((device_id, cam_id))
+        if existing is not None:
+            try:
+                await existing.close(code=4009, reason="Replaced by new viewer")
+            except Exception:
+                pass
         self._streams[(device_id, cam_id)] = ws
 
     def unregister_browser(self, device_id: str, cam_id: str) -> None:
