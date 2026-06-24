@@ -9,6 +9,7 @@ from app.routers.roles import router as roles_router
 from app.routers.groups import router as groups_router
 from app.routers.relay_bridge import router as relay_router
 from app.routers.locations import router as locations_router
+from app.routers.cameras import router as cameras_router
 
 
 def create_app() -> FastAPI:
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
     app.include_router(groups_router)
     app.include_router(relay_router)
     app.include_router(locations_router)
+    app.include_router(cameras_router)
 
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=settings.uploads_dir), name="uploads")

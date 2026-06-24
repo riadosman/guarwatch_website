@@ -14,8 +14,11 @@ router = APIRouter(prefix="/api/groups", tags=["groups"])
 
 class GroupCreate(BaseModel):
     name: str
-    device_id: str
+    device_id: str | None = None
     camera_uris: List[str] = []
+    il_id: int
+    ilce_id: int
+    mahalle_id: int
 
 
 class GroupOut(BaseModel):
@@ -23,6 +26,9 @@ class GroupOut(BaseModel):
     name: str
     device_id: str
     camera_uris: List[str]
+    il_id: int | None = None
+    ilce_id: int | None = None
+    mahalle_id: int | None = None
 
     model_config = {"from_attributes": True}
 
@@ -43,8 +49,11 @@ async def create_group(
 ):
     group = CameraGroup(
         name=body.name,
-        device_id=body.device_id,
+        device_id=body.device_id or "",
         camera_uris=body.camera_uris,
+        il_id=body.il_id,
+        ilce_id=body.ilce_id,
+        mahalle_id=body.mahalle_id,
         created_at=datetime.utcnow(),
     )
     db.add(group)
