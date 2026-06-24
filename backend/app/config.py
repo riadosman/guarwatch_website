@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     min_screenshot_width: int = 1280
     min_screenshot_height: int = 720
     screenshot_strict: bool = False  # True → reject low-res, False → log warning only
+    bootstrap_secret: str = Field(
+        default="",
+        description="Shared secret for zero-touch Jetson registration. Empty = disabled.",
+    )
 
     @model_validator(mode="after")
     def _check_secrets_in_prod(self) -> "Settings":

@@ -25,6 +25,10 @@ def require_permission(service: str, action: str):
         db: Session = Depends(get_db),
         current_user: User = Depends(_get_current_user_from_cookie),
     ) -> User:
+        # SuperAdmin bypasses all RBAC checks
+        if current_user.role is not None and getattr(current_user.role, "is_superadmin", False):
+            return current_user
+
         if current_user.role_id is None:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Kullanıcıya rol atanmamış")
         perm = (

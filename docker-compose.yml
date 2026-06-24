@@ -27,6 +27,7 @@ services:
       DEVICE_TOKENS: 00000000-0000-0000-0000-000000000001:dev-token
       RELAY_URL: http://relay:8765
       RELAY_API_KEY: ${RELAY_API_KEY:-changeme}
+      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET:-}
     volumes:
       - ./backend:/app
       - backend_uploads:/uploads
@@ -49,9 +50,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       BACKEND_INTERNAL_URL: http://backend:8000
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/next.config.mjs:/app/next.config.mjs
+      - frontend_next:/app/.next
     depends_on:
       - backend
 
@@ -64,10 +66,13 @@ services:
       AGENT_DEVICE_TOKEN: dev-token
       AGENT_BACKEND_URL: http://backend:8000
       AGENT_PORT: 9000
+      AGENT_RELAY_WS_URL: ws://relay:8765/agent
+      AGENT_SECRET: ${AGENT_SECRET:-}
     volumes:
       - ./agent:/app
     depends_on:
       - backend
+      - relay
 
   relay:
     build:
@@ -96,3 +101,4 @@ services:
 volumes:
   postgres_data:
   backend_uploads:
+  frontend_next:
