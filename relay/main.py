@@ -8,11 +8,13 @@ from pydantic import BaseModel
 
 from .connection_mgr import ConnectionManager
 from .pairing import PairingService
+from .stream_hub import StreamHub
 from .terminal_hub import TerminalHub
 
 manager = ConnectionManager()
 pairing = PairingService()
 terminal_hub = TerminalHub()
+stream_hub = StreamHub()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 AGENT_SECRET = os.getenv("AGENT_SECRET", "")  # empty = auth disabled
@@ -70,6 +72,11 @@ async def agent_endpoint(ws: WebSocket):
             elif ch == 1 and device_id:
                 await _notify_backend(device_id, mtype, msg.get("data", {}))
 
+            elif ch == 3 and device_id:
+                # Stream frames from Jetson → forward to browser
+                cam_id = msg.get("cam_id", "")
+                if cam_id:
+                    await stream_hub.forward_to_browser(device_id, cam_id, json.dumps(msg))
             elif ch >= 2 and device_id:
                 await terminal_hub.forward_to_browser(
                     device_id, ch, json.dumps(msg)
@@ -99,6 +106,41 @@ async def terminal_endpoint(ws: WebSocket, device_id: str):
         pass
     finally:
         terminal_hub.unregister_browser(device_id, ch)
+
+
+# ── Browser Stream WebSocket ──────────────────────────────────────────────────
+
+@app.websocket("/stream/{device_id}/{cam_id}")
+async def stream_endpoint(ws: WebSocket, device_id: str, cam_id: str):
+    """Browser connects here to receive live camera frames."""
+    await ws.accept()
+    if not manager.is_online(device_id):
+        await ws.close(code=4004, reason="Device offline")
+        return
+
+    stream_hub.register_browser(device_id, cam_id, ws)
+    # Tell Jetson to start streaming this camera
+    await manager.send(device_id, {
+        "ch": 3,
+        "type": "stream_start",
+        "cam_id": cam_id,
+    })
+    try:
+        async for _ in ws.iter_text():
+            pass  # browser doesn't send messages
+    except WebSocketDisconnect:
+        pass
+    finally:
+        stream_hub.unregister_browser(device_id, cam_id)
+        # Tell Jetson to stop streaming
+        try:
+            await manager.send(device_id, {
+                "ch": 3,
+                "type": "stream_stop",
+                "cam_id": cam_id,
+            })
+        except Exception:
+            pass
 
 
 # ── Pairing HTTP ──────────────────────────────────────────────────────────────
