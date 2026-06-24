@@ -1,13 +1,15 @@
 # backend/app/routers/devices.py
 from __future__ import annotations
 
+import hmac
 import uuid
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
 
+from app.config import settings
 from app.core.auth import require_auth
 from app.core.deps import DbSession
 from app.models.device import Device
@@ -111,3 +113,36 @@ def remove_device(
     if not delete_device(db, device_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "device not found")
     db.commit()
+
+
+class BootstrapIn(BaseModel):
+    name: str
+
+
+class BootstrapOut(BaseModel):
+    device_id: str
+    token: str
+    name: str
+
+
+@router.post("/devices/bootstrap", response_model=BootstrapOut, status_code=201)
+def bootstrap_device(
+    body: BootstrapIn,
+    db: DbSession,
+    authorization: Annotated[str | None, Header()] = None,
+) -> BootstrapOut:
+    """Zero-touch device registration for Jetson units.
+
+    Requires the ``Authorization: Bearer <BOOTSTRAP_SECRET>`` header.
+    Returns 403 when bootstrap is disabled (empty secret), 401 on wrong secret.
+    """
+    if not settings.bootstrap_secret:
+        raise HTTPException(status_code=403, detail="Bootstrap kaydi devre disi")
+
+    presented = (authorization or "").removeprefix("Bearer ").strip()
+    if not hmac.compare_digest(presented.encode(), settings.bootstrap_secret.encode()):
+        raise HTTPException(status_code=401, detail="Gecersiz bootstrap secret")
+
+    device, token = create_device(db, body.name)
+    db.commit()
+    return BootstrapOut(device_id=str(device.id), token=token, name=device.name)
