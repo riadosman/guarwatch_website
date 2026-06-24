@@ -31,8 +31,7 @@ def upgrade():
     # Role tablosuna is_superadmin alani
     op.add_column("roles", sa.Column("is_superadmin", sa.Boolean, server_default="false", nullable=False))
     # Mevcut SuperAdmin rolunu (id=1) superadmin olarak isaretile
-    conn = op.get_bind()
-    conn.execute(sa.text("UPDATE roles SET is_superadmin = true WHERE id = 1"))
+    op.execute(sa.text("UPDATE roles SET is_superadmin = true WHERE id = 1"))
 
     # CameraGroup tablosuna location alanlari
     op.add_column("camera_groups", sa.Column("il_id", sa.Integer, sa.ForeignKey("iller.id"), nullable=True))
