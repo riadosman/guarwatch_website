@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Plus, Trash2, Layers } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 interface Group {
   id: number;
   name: string;
-  device_id?: string;
+  device_id?: string | null;
   camera_uris?: string[];
 }
 
@@ -19,30 +21,19 @@ interface Location {
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    il_id: 0,
-    ilce_id: 0,
-    mahalle_id: 0,
-  });
+  const [form, setForm] = useState({ name: "", il_id: 0, ilce_id: 0, mahalle_id: 0 });
   const [iller, setIller] = useState<Location[]>([]);
   const [ilceler, setIlceler] = useState<Location[]>([]);
   const [mahalleler, setMahalleler] = useState<Location[]>([]);
 
-  // Load groups on mount
   useEffect(() => {
     fetch("/api/groups").then((r) => r.json()).then(setGroups).catch(() => {});
   }, []);
 
-  // Load iller on mount
   useEffect(() => {
-    fetch("/api/locations/iller")
-      .then((r) => r.json())
-      .then(setIller)
-      .catch(() => {});
+    fetch("/api/locations/iller").then((r) => r.json()).then(setIller).catch(() => {});
   }, []);
 
-  // Load ilceler when il_id changes
   useEffect(() => {
     if (!form.il_id) {
       setIlceler([]);
@@ -58,7 +49,6 @@ export default function GroupsPage() {
     setMahalleler([]);
   }, [form.il_id]);
 
-  // Load mahalleler when ilce_id changes
   useEffect(() => {
     if (!form.ilce_id) {
       setMahalleler([]);
@@ -96,111 +86,122 @@ export default function GroupsPage() {
   };
 
   const deleteGroup = async (id: number) => {
+    if (!confirm("Bu grubu silmek istediğinizden emin misiniz?")) return;
     await fetch(`/api/groups/${id}`, { method: "DELETE" });
     setGroups((prev) => prev.filter((g) => g.id !== id));
   };
 
   return (
-    <div className="p-6 max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Kamera Grupları</h1>
-        <button
-          onClick={() => setCreating(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium"
-        >
-          + Grup Oluştur
-        </button>
-      </div>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <Navbar variant="app" />
+      <main className="mx-auto max-w-3xl px-4 py-8 space-y-6">
 
-      {creating && (
-        <div className="mb-6 p-4 border border-gray-700 rounded-lg space-y-3">
-          <input
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            placeholder="Grup adı"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          />
-          <select
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm"
-            value={form.il_id}
-            onChange={(e) => setForm((f) => ({ ...f, il_id: Number(e.target.value) }))}
-            required
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Kamera Grupları</h1>
+          <button
+            onClick={() => setCreating(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            <option value={0}>-- İl Seçin --</option>
-            {iller.map((il) => (
-              <option key={il.id} value={il.id}>
-                {il.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm disabled:opacity-50"
-            value={form.ilce_id}
-            onChange={(e) => setForm((f) => ({ ...f, ilce_id: Number(e.target.value) }))}
-            required
-            disabled={!form.il_id}
-          >
-            <option value={0}>-- İlçe Seçin --</option>
-            {ilceler.map((ilce) => (
-              <option key={ilce.id} value={ilce.id}>
-                {ilce.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm disabled:opacity-50"
-            value={form.mahalle_id}
-            onChange={(e) => setForm((f) => ({ ...f, mahalle_id: Number(e.target.value) }))}
-            required
-            disabled={!form.ilce_id}
-          >
-            <option value={0}>-- Mahalle Seçin --</option>
-            {mahalleler.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-2">
-            <button
-              onClick={createGroup}
-              className="px-4 py-2 bg-green-700 hover:bg-green-600 rounded text-sm"
-            >
-              Oluştur
-            </button>
-            <button
-              onClick={() => setCreating(false)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm"
-            >
-              İptal
-            </button>
-          </div>
+            <Plus className="h-4 w-4" /> Grup Oluştur
+          </button>
         </div>
-      )}
 
-      <div className="space-y-3">
-        {groups.map((g) => (
-          <div key={g.id} className="p-4 border border-gray-700 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">{g.name}</span>
-              <button
-                onClick={() => deleteGroup(g.id)}
-                className="px-3 py-1 bg-red-900 hover:bg-red-800 rounded text-xs"
+        {creating && (
+          <div className="rounded-xl border bg-white p-5 shadow-sm space-y-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Yeni grup</p>
+            <input
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+              placeholder="Grup adı"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <select
+                className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                value={form.il_id}
+                onChange={(e) => setForm((f) => ({ ...f, il_id: Number(e.target.value) }))}
               >
-                Sil
+                <option value={0}>— İl —</option>
+                {iller.map((il) => (
+                  <option key={il.id} value={il.id}>{il.name}</option>
+                ))}
+              </select>
+              <select
+                className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 disabled:opacity-40"
+                value={form.ilce_id}
+                onChange={(e) => setForm((f) => ({ ...f, ilce_id: Number(e.target.value) }))}
+                disabled={!form.il_id}
+              >
+                <option value={0}>— İlçe —</option>
+                {ilceler.map((ilce) => (
+                  <option key={ilce.id} value={ilce.id}>{ilce.name}</option>
+                ))}
+              </select>
+              <select
+                className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 disabled:opacity-40"
+                value={form.mahalle_id}
+                onChange={(e) => setForm((f) => ({ ...f, mahalle_id: Number(e.target.value) }))}
+                disabled={!form.ilce_id}
+              >
+                <option value={0}>— Mahalle —</option>
+                {mahalleler.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={createGroup}
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+              >
+                Oluştur
+              </button>
+              <button
+                onClick={() => setCreating(false)}
+                className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                İptal
               </button>
             </div>
-            <p className="text-xs text-gray-500 mb-1">Cihaz: {g.device_id}</p>
-            <div className="flex flex-wrap gap-1">
-              {g.camera_uris.map((uri) => (
-                <span key={uri} className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">
-                  {uri}
-                </span>
-              ))}
-            </div>
           </div>
-        ))}
-      </div>
+        )}
+
+        {groups.length === 0 && !creating ? (
+          <div className="rounded-xl border bg-white p-8 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <Layers className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-3" />
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Henüz grup yok. Kameraları il / ilçe / mahalle bazında gruplamak için oluşturun.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {groups.map((g) => (
+              <div
+                key={g.id}
+                className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                  <Layers className="h-4 w-4 text-zinc-400" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{g.name}</p>
+                  {g.camera_uris && g.camera_uris.length > 0 && (
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      {g.camera_uris.length} kamera
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => deleteGroup(g.id)}
+                  className="rounded p-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0"
+                >
+                  <Trash2 className="h-4 w-4 text-red-400" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

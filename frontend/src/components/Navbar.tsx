@@ -73,6 +73,11 @@ export function Navbar({ variant = "marketing" }: Props) {
               {isAdmin && (
                 <>
                   <Button asChild variant="ghost" size="sm">
+                    <Link href="/dashboard/groups" className="flex items-center gap-1.5">
+                      Gruplar
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
                     <Link href="/dashboard/users" className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" /> Kullanıcılar
                     </Link>

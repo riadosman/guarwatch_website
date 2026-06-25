@@ -300,7 +300,12 @@ export default function DevicesPage() {
                     </button>
                   </div>
                 ) : (
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{d.name}</p>
+                  <Link
+                    href={`/dashboard/devices/${d.id}`}
+                    className="text-sm font-medium text-zinc-900 hover:text-red-600 dark:text-zinc-100 dark:hover:text-red-400"
+                  >
+                    {d.name}
+                  </Link>
                 )}
                 <p className="text-xs text-zinc-400 truncate dark:text-zinc-500">{d.id}</p>
                 {d.last_seen_at && (

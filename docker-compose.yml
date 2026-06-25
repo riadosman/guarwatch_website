@@ -24,7 +24,6 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       UPLOADS_DIR: /uploads
-      DEVICE_TOKENS: 00000000-0000-0000-0000-000000000001:dev-token
       RELAY_URL: http://relay:8765
       RELAY_API_KEY: ${RELAY_API_KEY:-changeme}
       BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET:-}
@@ -33,7 +32,6 @@ services:
       - backend_uploads:/uploads
     command: >-
       sh -c "alembic upgrade head &&
-             python -c 'from app.db import SessionLocal; from app.models import Device; import uuid; s=SessionLocal(); did=uuid.UUID(\"00000000-0000-0000-0000-000000000001\"); d=s.get(Device, did); d or s.add(Device(id=did, name=\"Demo Jetson 1\", device_token=\"dev-token\")); s.commit(); s.close()' &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000"
     depends_on:
       postgres:
@@ -56,23 +54,6 @@ services:
       - frontend_next:/app/.next
     depends_on:
       - backend
-
-  agent:
-    build:
-      context: ./agent
-      dockerfile: Dockerfile.dev
-    environment:
-      AGENT_DEVICE_ID: 00000000-0000-0000-0000-000000000001
-      AGENT_DEVICE_TOKEN: dev-token
-      AGENT_BACKEND_URL: http://backend:8000
-      AGENT_PORT: 9000
-      AGENT_RELAY_WS_URL: ws://relay:8765/agent
-      AGENT_SECRET: ${AGENT_SECRET:-}
-    volumes:
-      - ./agent:/app
-    depends_on:
-      - backend
-      - relay
 
   relay:
     build:
