@@ -17,7 +17,7 @@ async def ws_panel(ws: WebSocket) -> None:
         except JWTError:
             token = None
     if not token:
-        # Returning without ws.accept() causes Starlette to send HTTP 403
+        await ws.close(code=1008)
         return
     await ws.accept()
     queue = hub.subscribe()

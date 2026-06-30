@@ -6,6 +6,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from .audio_hub import AudioHub
 from .connection_mgr import ConnectionManager
 from .pairing import PairingService
 from .stream_hub import StreamHub
@@ -15,6 +16,7 @@ manager = ConnectionManager()
 pairing = PairingService()
 terminal_hub = TerminalHub()
 stream_hub = StreamHub()
+audio_hub = AudioHub()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 AGENT_SECRET = os.getenv("AGENT_SECRET", "")  # empty = auth disabled
@@ -77,6 +79,10 @@ async def agent_endpoint(ws: WebSocket):
                 cam_id = msg.get("cam_id", "")
                 if cam_id:
                     await stream_hub.forward_to_browser(device_id, cam_id, json.dumps(msg))
+            elif ch == 4 and device_id:
+                # Audio chunks from Jetson → forward to listening browsers
+                if audio_hub.has_listeners(device_id):
+                    await audio_hub.broadcast(device_id, raw)
             elif ch >= 2 and device_id:
                 await terminal_hub.forward_to_browser(
                     device_id, ch, json.dumps(msg)
@@ -141,6 +147,34 @@ async def stream_endpoint(ws: WebSocket, device_id: str, cam_id: str):
             })
         except Exception:
             pass
+
+
+# ── Browser Audio WebSocket ───────────────────────────────────────────────────
+
+@app.websocket("/audio/{device_id}")
+async def audio_endpoint(ws: WebSocket, device_id: str):
+    """Tarayıcı buraya bağlanarak Jetson mikrofonunu dinler."""
+    await ws.accept()
+    if not manager.is_online(device_id):
+        await ws.close(code=4004, reason="Device offline")
+        return
+
+    audio_hub.register_browser(device_id, ws)
+    # Jetson'a ses akışını başlatmasını söyle
+    await manager.send(device_id, {"ch": 4, "type": "audio_start"})
+    try:
+        async for _ in ws.iter_text():
+            pass  # tarayıcı ses göndermez
+    except WebSocketDisconnect:
+        pass
+    finally:
+        audio_hub.unregister_browser(device_id, ws)
+        # Başka dinleyen yoksa Jetson'a durdurmasını söyle
+        if not audio_hub.has_listeners(device_id):
+            try:
+                await manager.send(device_id, {"ch": 4, "type": "audio_stop"})
+            except Exception:
+                pass
 
 
 # ── Pairing HTTP ──────────────────────────────────────────────────────────────

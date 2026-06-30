@@ -1,5 +1,4 @@
 // frontend/src/lib/webhooks.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export interface WebhookConfig {
   id: string;
@@ -32,13 +31,13 @@ function creds(): RequestInit {
 }
 
 export async function getWebhooks(): Promise<WebhookConfig[]> {
-  const res = await fetch(`${API_URL}/api/webhooks`, creds());
+  const res = await fetch("/api/webhooks", creds());
   if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }
 
 export async function createWebhook(body: WebhookConfigCreate): Promise<WebhookConfig> {
-  const res = await fetch(`${API_URL}/api/webhooks`, {
+  const res = await fetch("/api/webhooks", {
     ...creds(),
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -49,7 +48,7 @@ export async function createWebhook(body: WebhookConfigCreate): Promise<WebhookC
 }
 
 export async function patchWebhook(id: string, body: WebhookConfigPatch): Promise<WebhookConfig> {
-  const res = await fetch(`${API_URL}/api/webhooks/${id}`, {
+  const res = await fetch(`/api/webhooks/${id}`, {
     ...creds(),
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -60,6 +59,6 @@ export async function patchWebhook(id: string, body: WebhookConfigPatch): Promis
 }
 
 export async function deleteWebhook(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/webhooks/${id}`, { ...creds(), method: "DELETE" });
+  const res = await fetch(`/api/webhooks/${id}`, { ...creds(), method: "DELETE" });
   if (!res.ok && res.status !== 404) throw new Error(`${res.status}`);
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Trash2, Video, Wifi, WifiOff } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import LiveAudio from "@/components/LiveAudio";
 
 interface Camera {
   id: string;
@@ -67,6 +68,12 @@ export default function DevicePage({ params }: { params: { id: string } }) {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Kamera Yönetimi</h1>
           <span className="text-xs text-zinc-400 font-mono">{params.id}</span>
+        </div>
+
+        {/* Ses Dinleme */}
+        <div className="rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">🎙️ Canlı Mikrofon</p>
+          <LiveAudio deviceId={params.id} />
         </div>
 
         {cameras.length === 0 ? (

@@ -26,7 +26,7 @@ services:
       UPLOADS_DIR: /uploads
       RELAY_URL: http://relay:8765
       RELAY_API_KEY: ${RELAY_API_KEY:-changeme}
-      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET:-}
+      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET:-guardwatch-bootstrap-2026}
     volumes:
       - ./backend:/app
       - backend_uploads:/uploads
@@ -47,6 +47,7 @@ services:
       NEXT_PUBLIC_BACKEND_WS_URL: ${BACKEND_PUBLIC_WS_URL:-ws://localhost:8000}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       BACKEND_INTERNAL_URL: http://backend:8000
+      WATCHPACK_POLLING: "true"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
