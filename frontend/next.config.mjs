@@ -21,8 +21,12 @@ const nextConfig = {
       },
       // Panel WebSocket → backend (ws.ts connects to /ws/panel via this proxy)
       {
-        source: "/ws/:path*",
-        destination: `${backendUrl}/ws/:path*`,
+        source: "/ws/ticket",
+        destination: `${backendUrl}/ws/ticket`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ];
   },
